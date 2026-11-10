@@ -117,7 +117,7 @@ function renderRecords() {
   const query = $("search-input").value.trim().toLowerCase();
   const courier = $("courier-filter").value;
   const rows = pickupRecords.filter(r =>
-    (courier === "ALL" || r.courier === courier) &&
+    r.month === activeMonthKey && (courier === "ALL" || r.courier === courier) &&
     [r.date,r.time,r.courier,r.rider,...r.tracking].join(" ").toLowerCase().includes(query)
   );
   $("records-body").innerHTML = rows.length ? rows.map(r => `<tr>
@@ -151,8 +151,8 @@ document.addEventListener("keydown",e => { if(e.key === "Escape") closeDetail();
 $("search-input").addEventListener("input",renderRecords);
 $("courier-filter").addEventListener("change",renderRecords);
 $("export-button").addEventListener("click",() => {
-  const lines = [["Tarikh","Masa","Total","Courier","Driver / Rider","Tracking (masked)"]];
-  pickupRecords.forEach(r => lines.push([r.date,r.time,r.tracking.length,r.courier,r.rider,r.tracking.join(" | ")]));
+  const lines = [["Bulan","Tarikh","Masa","Total","Courier","Driver / Rider","Tracking (masked)"]];
+  recordsForMonth(activeMonthKey).forEach(r => lines.push([r.month,r.date,r.time,r.tracking.length,r.courier,r.rider,r.tracking.join(" | ")]));
   const csv = lines.map(row => row.map(value => '"'+String(value).replace(/"/g,'""')+'"').join(",")).join("\r\n");
   const blob = new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8"});
   const url = URL.createObjectURL(blob); const a = document.createElement("a");
