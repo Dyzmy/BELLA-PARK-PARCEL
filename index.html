@@ -18,7 +18,7 @@
         <span class="brand-mark">BP</span>
         <span class="brand-copy"><strong>BELLA PARK</strong><small>PARCEL MANAGEMENT SYSTEM</small></span>
       </a>
-      <div class="topbar-right"><span class="live-dot"></span><span id="connection-label">SECURE STAFF DASHBOARD</span><button class="outline-button" id="logout-button" type="button" hidden>Log keluar</button></div>
+      <div class="topbar-right"><span class="live-dot"></span><span id="connection-label">SECURE STAFF DASHBOARD</span><button class="outline-button" id="profile-button" type="button" hidden>Profile</button><button class="outline-button" id="logout-button" type="button" hidden>Log keluar</button></div>
     </header>
 
     <main class="container" id="dashboard-content" hidden>
@@ -86,12 +86,50 @@
       <p class="eyebrow">BELLA PARK · STAFF ACCESS</p>
       <h1>Log masuk</h1>
       <p class="auth-description">Log masuk menggunakan akaun staf yang telah didaftarkan.</p>
-      <label>Email<input id="login-email" type="email" autocomplete="username" required placeholder="Email staf"></label>
+      <label>Username / Email<input id="login-email" type="text" autocomplete="username" required placeholder="Username atau email staf"></label>
       <label>Password<input id="login-password" type="password" autocomplete="current-password" required placeholder="Password"></label>
       <button class="auth-submit" id="login-submit" type="submit">LOG MASUK</button>
       <p class="auth-message" id="auth-message" role="status"></p>
     </form>
   </section>
+
+  <div class="account-backdrop" id="setup-modal" aria-hidden="true">
+    <section class="account-modal" role="dialog" aria-modal="true" aria-labelledby="setup-title">
+      <button class="account-close" id="setup-close" type="button" aria-label="Tutup">×</button>
+      <p class="eyebrow">BELLA PARK · ACCOUNT SECURITY</p>
+      <h2 id="setup-title">Lengkapkan Maklumat Pemulihan Akaun</h2>
+      <p class="account-copy">Masukkan email sebenar yang boleh diakses dan tetapkan password baharu. Email ini digunakan untuk pemulihan akaun. Pengesahan email mungkin diperlukan.</p>
+      <form id="setup-form">
+        <label>Email pemulihan<input id="setup-email" type="email" autocomplete="email" required placeholder="nama@email.com"></label>
+        <label>Password baharu<input id="setup-password" type="password" minlength="8" autocomplete="new-password" required placeholder="Minimum 8 aksara"></label>
+        <label>Sahkan password<input id="setup-password-confirm" type="password" minlength="8" autocomplete="new-password" required placeholder="Masukkan semula password"></label>
+        <p class="account-note">Popup ini dipaparkan maksimum 3 kali. Kau boleh tutup dan terus gunakan sistem dengan akaun semasa.</p>
+        <button class="auth-submit" id="setup-submit" type="submit">KEMASKINI AKAUN</button>
+        <p class="account-message" id="setup-message" role="status"></p>
+      </form>
+      <p class="account-apology">Maaf jika popup ini mengganggu keselesaan anda. Terima kasih atas kerjasama anda.</p>
+    </section>
+  </div>
+  <div class="account-backdrop" id="profile-modal" aria-hidden="true">
+    <section class="account-modal" role="dialog" aria-modal="true" aria-labelledby="profile-title">
+      <button class="account-close" id="profile-close" type="button" aria-label="Tutup">×</button>
+      <p class="eyebrow">BELLA PARK · ACCOUNT PROFILE</p>
+      <h2 id="profile-title">Profile / Kemaskini Akaun</h2>
+      <div class="profile-summary">
+        <div><small>USERNAME</small><strong id="profile-username">-</strong></div>
+        <div><small>EMAIL SEMASA</small><strong id="profile-current-email">Belum ditetapkan</strong></div>
+        <div><small>STATUS EMAIL</small><strong id="profile-email-status">Belum disahkan</strong></div>
+      </div>
+      <form id="profile-form">
+        <label>Email pemulihan baharu<input id="profile-email" type="email" autocomplete="email" placeholder="nama@email.com"></label>
+        <label>Password baharu (pilihan)<input id="profile-password" type="password" minlength="8" autocomplete="new-password" placeholder="Kosongkan jika tidak mahu tukar"></label>
+        <label>Sahkan password baharu<input id="profile-password-confirm" type="password" minlength="8" autocomplete="new-password" placeholder="Masukkan semula password"></label>
+        <button class="auth-submit" id="profile-submit" type="submit">SIMPAN KEMASKINI</button>
+        <p class="account-message" id="profile-message" role="status"></p>
+      </form>
+    </section>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/js/dashboard.js"></script>
 </body>
