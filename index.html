@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101722">
+  <meta name="description" content="Bella Park Parcel Management System">
+  <title>BELLA PARK | Parcel Management</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="Bella Park home">
+        <span class="brand-mark">BP</span>
+        <span class="brand-copy"><strong>BELLA PARK</strong><small>PARCEL MANAGEMENT SYSTEM</small></span>
+      </a>
+      <div class="topbar-right"><span class="live-dot"></span><span>RECORD DASHBOARD</span></div>
+    </header>
+
+    <main class="container">
+      <section class="welcome">
+        <div>
+          <p class="eyebrow">OPERATIONS OVERVIEW</p>
+          <h1>Pickup <em>Records</em></h1>
+          <p class="subtitle">Rekod pickup parcel Bella Park dalam satu paparan.</p>
+        </div>
+        <div class="date-chip" id="today-label">TODAY</div>
+      </section>
+
+      <section class="stats-grid" aria-label="Parcel summary">
+        <article class="stat-card total-card">
+          <div class="stat-top"><span class="stat-label">TOTAL PARCEL</span><span class="stat-icon">▦</span></div>
+          <div class="stat-value" id="grand-total">75</div>
+          <div class="stat-foot">Jumlah semua rekod contoh</div>
+        </article>
+        <article class="stat-card"><div class="stat-top"><span class="stat-label">SPX</span><span class="courier-mark spx">S</span></div><div class="stat-value" id="spx-total">25</div><div class="stat-foot">Parcel</div></article>
+        <article class="stat-card"><div class="stat-top"><span class="stat-label">J&amp;T</span><span class="courier-mark jt">J</span></div><div class="stat-value" id="jt-total">18</div><div class="stat-foot">Parcel</div></article>
+        <article class="stat-card"><div class="stat-top"><span class="stat-label">NINJA</span><span class="courier-mark ninja">N</span></div><div class="stat-value" id="ninja-total">32</div><div class="stat-foot">Parcel</div></article>
+      </section>
+
+      <section class="records-panel">
+        <div class="panel-heading">
+          <div><p class="eyebrow">PICKUP HISTORY</p><h2>Senarai Rekod</h2></div>
+          <button class="outline-button" id="export-button" type="button"><span>↓</span> Export CSV</button>
+        </div>
+        <div class="toolbar">
+          <label class="search-box"><span>⌕</span><input id="search-input" type="search" placeholder="Cari courier, driver atau tracking..." autocomplete="off"></label>
+          <label class="filter-wrap"><span>Courier</span><select id="courier-filter"><option value="ALL">Semua courier</option><option>SPX</option><option>J&amp;T</option><option>NINJA</option></select></label>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>TARIKH</th><th>MASA</th><th>TOTAL</th><th>COURIER</th><th>DRIVER / RIDER</th><th>STATUS</th></tr></thead>
+            <tbody id="records-body"></tbody>
+          </table>
+        </div>
+        <div class="table-note"><span class="lock-icon">▣</span> Paparan sahaja · Rekod tidak boleh diedit atau dipadam melalui website.</div>
+      </section>
+      <footer class="footer"><span>© <span id="year"></span> BELLA PARK</span><span>PARCEL MANAGEMENT SYSTEM</span></footer>
+    </main>
+  </div>
+
+  <div class="modal-backdrop" id="detail-modal" aria-hidden="true">
+    <section class="detail-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div class="modal-head"><div><p class="eyebrow">PICKUP DETAIL</p><h2 id="modal-title">Tracking Parcel</h2></div><button class="close-button" id="close-modal" aria-label="Tutup">×</button></div>
+      <div class="detail-meta" id="detail-meta"></div>
+      <div class="tracking-heading"><strong>Senarai Tracking</strong><span id="tracking-count"></span></div>
+      <ol class="tracking-list" id="tracking-list"></ol>
+    </section>
+  </div>
+  <script src="assets/js/dashboard.js"></script>
+</body>
+</html>
