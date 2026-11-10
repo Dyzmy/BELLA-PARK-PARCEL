@@ -175,7 +175,7 @@ $("export-button").addEventListener("click",()=>{
     const rs=recordsForMonth(activeMonthKey).filter(r=>r.dateKey===key);
     const morning=rs.filter(r=>r.hour<14).reduce((n,r)=>n+r.tracking.length,0);
     const afternoon=rs.filter(r=>r.hour>=14&&r.hour<=17).reduce((n,r)=>n+r.tracking.length,0);
-    lines.push([activeDriver,activeMonthKey,key,morning||"",afternoon||[...rs].filter(r=>r.hour>17).reduce((n,r)=>n+r.tracking.length,0)||"",[...new Set(rs.map(r=>r.courier))].join(", "),rs.reduce((n,r)=>n+r.tracking.length,0)||""]);
+    lines.push([activeDriver,activeMonthKey,key,morning||"",afternoon||rs.filter(r=>!(r.hour*60+r.minute>=540&&r.hour*60+r.minute<=780)&&!(r.hour*60+r.minute>=840&&r.hour*60+r.minute<=1050)).reduce((n,r)=>n+r.tracking.length,0)||"",[...new Set(rs.map(r=>r.courier))].join(", "),rs.reduce((n,r)=>n+r.tracking.length,0)||""]);
   }
   const csv=lines.map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(",")).join("\r\n");
   const blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8"}); const url=URL.createObjectURL(blob);
