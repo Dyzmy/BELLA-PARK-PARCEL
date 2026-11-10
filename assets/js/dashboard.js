@@ -147,7 +147,7 @@ function renderRecords() {
       <td><strong>${total?total.toLocaleString("ms-MY")+"#":""}</strong></td></tr>`);
   }
   $("records-body").innerHTML=rows.length?rows.join(""):'<tr><td class="empty-row" colspan="5">Tiada rekod sepadan.</td></tr>';
-  document.querySelectorAll("[data-records]").forEach(button=>button.addEventListener("click",()=>showDetails(button.dataset.records.split(",")));
+  document.querySelectorAll("[data-records]").forEach(button=>button.addEventListener("click",()=>showDetails(button.dataset.records.split(","))));
 }
 function showDetails(ids) {
   const selected=pickupRecords.filter(r=>ids.includes(r.id));
