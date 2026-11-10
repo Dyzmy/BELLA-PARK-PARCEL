@@ -219,17 +219,13 @@ async function updateAccount(formPrefix,completeSetup){
     if(password!==confirm)throw new Error("Pengesahan password tidak sepadan.");
   }
   if(!email&&!password)throw new Error("Masukkan email atau password baharu.");
+  const {data:{user:currentUser}}=await client.auth.getUser();
   const {data:{user},error}=await client.auth.updateUser({
     ...(email?{email}:{}),
     ...(password?{password}:{}),
-    data:{...(client.auth.getUser?{}:{}),...(completeSetup?{account_setup_complete:true}:{})}
+    data:{...(currentUser?.user_metadata||{}),...(completeSetup?{account_setup_complete:true}:{})}
   });
   if(error)throw error;
-  if(completeSetup){
-    const metadata={...(user?.user_metadata||{}),account_setup_complete:true};
-    const {error:metaError}=await client.auth.updateUser({data:metadata});
-    if(metaError)throw metaError;
-  }
   await refreshProfilePanel();
   return email?"Permintaan kemaskini berjaya. Semak inbox email baharu untuk pautan pengesahan jika diminta.":"Password berjaya dikemaskini.";
 }
