@@ -6,6 +6,7 @@ const $ = id => document.getElementById(id);
 let pickupRecords = [];
 let activeDriver = null;
 let activeMonthKey = null;
+let activeProfile = null;
 
 function escapeHtml(value) {
   return String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -36,17 +37,18 @@ function showMessage(message,isError=true) {
 }
 function setSignedIn(user) {
   $("auth-screen").hidden=true; $("dashboard-content").hidden=false;
-  $("logout-button").hidden=false; $("connection-label").textContent=user.email||"STAFF SIGNED IN";
+  $("logout-button").hidden=false; $("profile-button").hidden=false; $("connection-label").textContent=user.email||"STAFF SIGNED IN";
 }
 function setSignedOut() {
   $("auth-screen").hidden=false; $("dashboard-content").hidden=true;
-  $("logout-button").hidden=true; $("connection-label").textContent="SECURE STAFF DASHBOARD";
+  $("logout-button").hidden=true; $("profile-button").hidden=true; $("connection-label").textContent="SECURE STAFF DASHBOARD";
 }
 async function loadDashboard() {
-  const {data:profile,error:profileError}=await client.from("staff_profiles").select("display_name,role").single();
+  const {data:profile,error:profileError}=await client.from("staff_profiles").select("display_name,role,username").single();
   if(profileError||!profile||!["admin","scanner","viewer"].includes(profile.role)) {
     await client.auth.signOut(); setSignedOut(); showMessage("Akaun ini tiada akses staf BELLA PARK. Hubungi pentadbir."); return;
   }
+  activeProfile=profile;
   const {data:sessions,error:sessionError}=await client.from("pickup_sessions")
     .select("id,courier,driver_name,picked_up_at,month_key").order("picked_up_at",{ascending:false}).limit(1000);
   if(sessionError) throw sessionError;
@@ -73,6 +75,7 @@ async function loadDashboard() {
   renderDrivers();
   renderMonthSummary();
   renderRecords();
+  refreshProfilePanel();
 }
 function recordsForMonth(key) { return pickupRecords.filter(r=>r.rider===activeDriver&&r.month===key); }
 function renderDrivers() {
@@ -181,12 +184,90 @@ $("export-button").addEventListener("click",()=>{
   const blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8"}); const url=URL.createObjectURL(blob);
   const a=document.createElement("a");a.href=url;a.download="bella-park-"+String(activeDriver||"driver").replace(/[^a-z0-9]/gi,"-")+"-"+activeMonthKey+".csv";a.click();URL.revokeObjectURL(url);
 });
+
+function openAccountModal(id){$(id).classList.add("open");$(id).setAttribute("aria-hidden","false");}
+function closeAccountModal(id){$(id).classList.remove("open");$(id).setAttribute("aria-hidden","true");}
+function refreshProfilePanel(){
+  const user=client.auth.getUser().then(({data})=>{
+    const u=data.user;if(!u)return;
+    $("profile-username").textContent=activeProfile?.username||u.user_metadata?.username||"Akaun sedia ada";
+    $("profile-current-email").textContent=u.email||"Belum ditetapkan";
+    $("profile-email-status").textContent=u.email_confirmed_at?"Disahkan":(u.new_email?"Menunggu pengesahan":"Belum disahkan");
+    $("profile-email").value="";
+    $("profile-password").value="";
+    $("profile-password-confirm").value="";
+  });
+  return user;
+}
+async function maybeShowSetupPopup(user){
+  const meta=user.user_metadata||{};
+  if(meta.account_setup_complete===true)return;
+  const count=Number(meta.account_setup_prompt_count||0);
+  if(count>=3)return;
+  await client.auth.updateUser({data:{...meta,account_setup_prompt_count:count+1}});
+  $("setup-email").value="";$("setup-password").value="";$("setup-password-confirm").value="";
+  $("setup-message").textContent="";
+  openAccountModal("setup-modal");
+}
+async function updateAccount(formPrefix,completeSetup){
+  const email=$(formPrefix+"email").value.trim();
+  const password=$(formPrefix+"password").value;
+  const confirm=$(formPrefix+"password-confirm").value;
+  if(completeSetup&&!email){throw new Error("Email pemulihan diperlukan.");}
+  if(password||confirm){
+    if(password.length<8)throw new Error("Password baharu mesti sekurang-kurangnya 8 aksara.");
+    if(password!==confirm)throw new Error("Pengesahan password tidak sepadan.");
+  }
+  if(!email&&!password)throw new Error("Masukkan email atau password baharu.");
+  const {data:{user},error}=await client.auth.updateUser({
+    ...(email?{email}:{}),
+    ...(password?{password}:{}),
+    data:{...(client.auth.getUser?{}:{}),...(completeSetup?{account_setup_complete:true}:{})}
+  });
+  if(error)throw error;
+  if(completeSetup){
+    const metadata={...(user?.user_metadata||{}),account_setup_complete:true};
+    const {error:metaError}=await client.auth.updateUser({data:metadata});
+    if(metaError)throw metaError;
+  }
+  await refreshProfilePanel();
+  return email?"Permintaan kemaskini berjaya. Semak inbox email baharu untuk pautan pengesahan jika diminta.":"Password berjaya dikemaskini.";
+}
+$("setup-close").addEventListener("click",()=>closeAccountModal("setup-modal"));
+$("profile-close").addEventListener("click",()=>closeAccountModal("profile-modal"));
+$("profile-button").addEventListener("click",async()=>{await refreshProfilePanel();openAccountModal("profile-modal");});
+$("setup-form").addEventListener("submit",async e=>{
+  e.preventDefault();const b=$("setup-submit");b.disabled=true;b.textContent="MENYIMPAN...";
+  try{
+    const msg=await updateAccount("setup-",true);
+    $("setup-message").textContent=msg+" Popup ini tidak akan dipaparkan lagi.";
+    b.textContent="BERJAYA";
+    setTimeout(()=>closeAccountModal("setup-modal"),2200);
+  }catch(err){$("setup-message").textContent=err.message||"Kemaskini gagal.";b.disabled=false;b.textContent="KEMASKINI AKAUN";}
+});
+$("profile-form").addEventListener("submit",async e=>{
+  e.preventDefault();const b=$("profile-submit");b.disabled=true;b.textContent="MENYIMPAN...";
+  try{$("profile-message").textContent=await updateAccount("profile-",false);}
+  catch(err){$("profile-message").textContent=err.message||"Kemaskini gagal.";}
+  b.disabled=false;b.textContent="SIMPAN KEMASKINI";
+});
 $("login-form").addEventListener("submit",async event=>{
   event.preventDefault();const button=$("login-submit");button.disabled=true;button.textContent="SEDANG LOG MASUK...";showMessage("",false);
-  const {data,error}=await client.auth.signInWithPassword({email:$("login-email").value.trim(),password:$("login-password").value});
+  const identity=$("login-email").value.trim();
+  let data,error;
+  if(identity.includes("@")){
+    ({data,error}=await client.auth.signInWithPassword({email:identity,password:$("login-password").value}));
+  }else{
+    const result=await client.functions.invoke("login-by-username",{body:{username:identity,password:$("login-password").value}});
+    data=result.data;error=result.error;
+    if(!error&&data?.session){
+      const sessionResult=await client.auth.setSession({access_token:data.session.access_token,refresh_token:data.session.refresh_token});
+      error=sessionResult.error;data={user:sessionResult.data.user,session:sessionResult.data.session};
+    }else if(!error){error=new Error(data?.error||"Log masuk gagal.");}
+  }
   button.disabled=false;button.textContent="LOG MASUK";
-  if(error){showMessage("Log masuk gagal. Semak email dan password.");return;}
-  try{setSignedIn(data.user);await loadDashboard();}
+  if(error){showMessage(error.message||"Log masuk gagal. Semak username dan password.");return;}
+  try{setSignedIn(data.user);await loadDashboard();await maybeShowSetupPopup(data.user);}
   catch(err){await client.auth.signOut();setSignedOut();showMessage("Gagal membaca database: "+(err.message||"Semak akses Supabase."));}
 });
 $("logout-button").addEventListener("click",async()=>{await client.auth.signOut();setSignedOut();});
@@ -194,6 +275,6 @@ $("logout-button").addEventListener("click",async()=>{await client.auth.signOut(
   $("year").textContent=new Date().getFullYear();
   const {data:{session}}=await client.auth.getSession();
   if(!session){setSignedOut();return;}
-  try{setSignedIn(session.user);await loadDashboard();}
+  try{setSignedIn(session.user);await loadDashboard();await maybeShowSetupPopup(session.user);}
   catch(err){await client.auth.signOut();setSignedOut();showMessage("Sambungan database gagal: "+(err.message||"Cuba lagi."));}
 })();
