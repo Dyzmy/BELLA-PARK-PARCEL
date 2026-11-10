@@ -28,3 +28,13 @@
 .month-card-foot{font-size:9px;color:#89939e;letter-spacing:.8px}
 .month-empty{color:#89939e;font-size:12px;padding:12px 0}
 @media(max-width:760px){.month-panel{padding:19px 14px}.month-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.month-card{padding:12px}.month-card strong{font-size:26px}}
+
+.driver-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;margin-top:19px}
+.driver-card{display:flex;flex-direction:column;align-items:flex-start;text-align:left;background:#fbfcfd;border:1px solid #e8ebef;border-radius:6px;padding:16px;cursor:pointer;transition:.15s}
+.driver-card:hover{border-color:#c8a96a}
+.driver-card.active{border-color:#c8a96a;background:#fbf7ee;box-shadow:inset 0 0 0 1px #c8a96a}
+.driver-card-label{font-size:9px;font-weight:700;letter-spacing:1.2px;color:#8c7141}
+.driver-card strong{font:24px "Playfair Display",serif;color:#1c2938;margin:7px 0}
+.driver-card-foot{font-size:9px;color:#89939e;letter-spacing:.7px}
+.outside-hours{display:block;color:#a17b3d;font-size:10px;margin-top:4px}
+@media(max-width:760px){.driver-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.driver-card{padding:12px}}
