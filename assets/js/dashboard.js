@@ -5,6 +5,7 @@ const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_K
 
 const $ = (id) => document.getElementById(id);
 let pickupRecords = [];
+let activeMonthKey = null;
 
 function escapeHtml(value) {
   return String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -64,16 +65,54 @@ async function loadDashboard() {
     courier:s.courier, rider:s.driver_name, tracking:bySession.get(s.id) || [],
     month:s.month_key
   }));
+
+  const currentMonth = new Date().toISOString().slice(0,7)+"-01";
+  const monthKeys = [...new Set(pickupRecords.map(r=>r.month))].sort().reverse();
+  activeMonthKey = monthKeys.includes(currentMonth) ? currentMonth : (monthKeys[0] || currentMonth);
   $("year").textContent = new Date().getFullYear();
   $("today-label").textContent = formatDate(new Date());
+  renderMonthSummary();
   renderRecords();
-  $("grand-total").textContent = pickupRecords.reduce((n,r)=>n+r.tracking.length,0);
-  $("spx-total").textContent = pickupRecords.filter(r=>r.courier==="SPX").reduce((n,r)=>n+r.tracking.length,0);
-  $("jt-total").textContent = pickupRecords.filter(r=>r.courier==="J&T").reduce((n,r)=>n+r.tracking.length,0);
-  $("ninja-total").textContent = pickupRecords.filter(r=>r.courier==="NINJA").reduce((n,r)=>n+r.tracking.length,0);
-  document.querySelector(".total-card .stat-foot").textContent = "Jumlah daripada database";
 }
-
+function monthTitle(key) {
+  const [year,month] = key.split("-").map(Number);
+  return new Intl.DateTimeFormat("ms-MY",{month:"long",year:"numeric"})
+    .format(new Date(year,month-1,1)).toUpperCase();
+}
+function recordsForMonth(key) {
+  return pickupRecords.filter(r=>r.month===key);
+}
+function renderMonthSummary() {
+  const totalsByMonth = new Map();
+  pickupRecords.forEach(r => {
+    if (!totalsByMonth.has(r.month)) totalsByMonth.set(r.month,{parcels:0,sessions:0});
+    const item=totalsByMonth.get(r.month);
+    item.parcels += r.tracking.length;
+    item.sessions += 1;
+  });
+  const months=[...totalsByMonth.keys()].sort().reverse();
+  $("month-summary").innerHTML = months.length ? months.map(key => {
+    const total=totalsByMonth.get(key);
+    return `<button type="button" class="month-card ${key===activeMonthKey?"active":""}" data-month="${escapeHtml(key)}">
+      <span class="month-card-title">${monthTitle(key)}</span>
+      <strong>${total.parcels.toLocaleString("ms-MY")}</strong>
+      <span class="month-card-foot">PARCEL · ${total.sessions} PICKUP</span>
+    </button>`;
+  }).join("") : '<p class="month-empty">Belum ada rekod bulanan.</p>';
+  document.querySelectorAll("[data-month]").forEach(button => button.addEventListener("click",()=>{
+    activeMonthKey=button.dataset.month;
+    renderMonthSummary();
+    renderRecords();
+  }));
+  const selected=recordsForMonth(activeMonthKey);
+  const total=selected.reduce((n,r)=>n+r.tracking.length,0);
+  $("grand-total").textContent=total.toLocaleString("ms-MY");
+  $("spx-total").textContent=selected.filter(r=>r.courier==="SPX").reduce((n,r)=>n+r.tracking.length,0).toLocaleString("ms-MY");
+  $("jt-total").textContent=selected.filter(r=>r.courier==="J&T").reduce((n,r)=>n+r.tracking.length,0).toLocaleString("ms-MY");
+  $("ninja-total").textContent=selected.filter(r=>r.courier==="NINJA").reduce((n,r)=>n+r.tracking.length,0).toLocaleString("ms-MY");
+  document.querySelector(".total-card .stat-label").textContent="TOTAL PARCEL · "+monthTitle(activeMonthKey);
+  document.querySelector(".total-card .stat-foot").textContent="Jumlah keseluruhan bagi bulan dipilih";
+}
 function renderRecords() {
   const query = $("search-input").value.trim().toLowerCase();
   const courier = $("courier-filter").value;
@@ -117,7 +156,7 @@ $("export-button").addEventListener("click",() => {
   const csv = lines.map(row => row.map(value => '"'+String(value).replace(/"/g,'""')+'"').join(",")).join("\r\n");
   const blob = new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8"});
   const url = URL.createObjectURL(blob); const a = document.createElement("a");
-  a.href=url; a.download="bella-park-pickup-records.csv"; a.click(); URL.revokeObjectURL(url);
+  a.href=url; a.download="bella-park-pickup-records-"+activeMonthKey+".csv"; a.click(); URL.revokeObjectURL(url);
 });
 $("login-form").addEventListener("submit", async event => {
   event.preventDefault();
