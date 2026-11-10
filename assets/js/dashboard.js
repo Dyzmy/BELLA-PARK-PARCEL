@@ -275,6 +275,6 @@ $("logout-button").addEventListener("click",async()=>{await client.auth.signOut(
   $("year").textContent=new Date().getFullYear();
   const {data:{session}}=await client.auth.getSession();
   if(!session){setSignedOut();return;}
-  try{setSignedIn(session.user);await loadDashboard();await maybeShowSetupPopup(session.user);}
+  try{setSignedIn(session.user);await loadDashboard();}
   catch(err){await client.auth.signOut();setSignedOut();showMessage("Sambungan database gagal: "+(err.message||"Cuba lagi."));}
 })();
