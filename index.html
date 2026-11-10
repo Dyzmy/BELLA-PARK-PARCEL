@@ -42,17 +42,18 @@
         <article class="stat-card"><div class="stat-top"><span class="stat-label">NINJA</span><span class="courier-mark ninja">N</span></div><div class="stat-value" id="ninja-total">32</div><div class="stat-foot">Parcel</div></article>
       </section>
 
+      <section class="month-panel driver-panel">
+        <div class="panel-heading"><div><p class="eyebrow">DRIVER / RIDER DIRECTORY</p><h2>Pilih Nama Driver / Rider</h2></div><span class="month-hint">Klik nama untuk buka arkib individu</span></div>
+        <div class="driver-grid" id="driver-summary"></div>
+      </section>
       <section class="month-panel">
-        <div class="panel-heading">
-          <div><p class="eyebrow">MONTHLY ARCHIVE</p><h2>Jumlah Parcel Setiap Bulan</h2></div>
-          <span class="month-hint">Pilih bulan untuk lihat rekod</span>
-        </div>
+        <div class="panel-heading"><div><p class="eyebrow">MONTHLY ARCHIVE</p><h2>Arkib <span id="archive-driver-title">Driver</span></h2></div><span class="month-hint">Pilih bulan untuk lihat rekod</span></div>
         <div class="month-grid" id="month-summary"></div>
       </section>
 
       <section class="records-panel">
         <div class="panel-heading">
-          <div><p class="eyebrow">PICKUP HISTORY</p><h2>Senarai Rekod</h2></div>
+          <div><p class="eyebrow">PICKUP HISTORY</p><h2>Rekod Harian · <span id="archive-driver-title-table">Pickup</span></h2></div>
           <button class="outline-button" id="export-button" type="button"><span>↓</span> Export CSV</button>
         </div>
         <div class="toolbar">
@@ -61,7 +62,7 @@
         </div>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>TARIKH</th><th>MASA</th><th>TOTAL</th><th>COURIER</th><th>DRIVER / RIDER</th><th>STATUS</th></tr></thead>
+            <thead><tr><th>TARIKH</th><th>PAGI · 9:00–1:00</th><th>PETANG · 2:00–5:30</th><th>COURIER</th><th>JUMLAH</th></tr></thead>
             <tbody id="records-body"></tbody>
           </table>
         </div>
