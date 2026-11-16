@@ -254,7 +254,7 @@ $("login-form").addEventListener("submit",async event=>{
   if(identity.includes("@")){
     ({data,error}=await client.auth.signInWithPassword({email:identity,password:$("login-password").value}));
   }else{
-    const result=await client.functions.invoke("login-by-username",{body:{username:identity,password:$("login-password").value}});
+    const result=await client.functions.invoke("login-by-username",{body:{username:identity.toLowerCase(),password:$("login-password").value}});
     data=result.data;error=result.error;
     if(!error&&data?.session){
       const sessionResult=await client.auth.setSession({access_token:data.session.access_token,refresh_token:data.session.refresh_token});
