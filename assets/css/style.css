@@ -54,3 +54,24 @@
 .profile-summary small{display:block;color:#8d98a4;font-size:9px;letter-spacing:1px;margin-bottom:3px}
 .profile-summary strong{font-size:12px;color:#293746;overflow-wrap:anywhere}
 @media(max-width:480px){.account-modal{padding:25px 20px}.account-modal h2{font-size:23px}}
+
+
+/* Account modal close control: prominent red circle with centered white X. */
+.account-close{
+  display:grid;
+  place-items:center;
+  width:36px;
+  height:36px;
+  padding:0;
+  border:2px solid #fff;
+  border-radius:50%;
+  background:#e32636;
+  color:#fff;
+  font:700 23px/1 Arial,sans-serif;
+  text-align:center;
+  box-shadow:0 2px 9px #8f142b55;
+  cursor:pointer;
+  transition:background .15s ease,transform .15s ease;
+}
+.account-close:hover{background:#c91528;transform:scale(1.06)}
+.account-close:focus-visible{outline:3px solid #f3c6cb;outline-offset:3px}
