@@ -68,6 +68,8 @@ async function loadDashboard() {
     return false;
   }
   activeProfile=profile;
+  $("admin-rider-panel").hidden=profile.role!=="admin";
+  if(profile.role==="admin") await loadRiderAccounts();
   const {data:sessions,error:sessionError}=await client.from("pickup_sessions")
     .select("id,courier,driver_name,picked_up_at,month_key").order("picked_up_at",{ascending:false}).limit(1000);
   if(sessionError) throw sessionError;
@@ -203,6 +205,56 @@ $("export-button").addEventListener("click",()=>{
   const csv=lines.map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(",")).join("\r\n");
   const blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8"}); const url=URL.createObjectURL(blob);
   const a=document.createElement("a");a.href=url;a.download="bella-park-"+String(activeDriver||"driver").replace(/[^a-z0-9]/gi,"-")+"-"+activeMonthKey+".csv";a.click();URL.revokeObjectURL(url);
+});
+
+
+async function riderRequest(body){
+  const {data,error}=await client.functions.invoke("admin-manage-riders",{body});
+  if(error){
+    let message=error.message||"Permintaan gagal.";
+    if(error.context&&typeof error.context.json==="function"){try{const detail=await error.context.json();if(detail?.error)message=detail.error;}catch(_){}}
+    throw new Error(data?.error||message);
+  }
+  if(data?.error)throw new Error(data.error);
+  return data;
+}
+async function loadRiderAccounts(){
+  const target=$("rider-list-body");
+  if(!target)return;
+  target.innerHTML='<tr><td colspan="6">Memuatkan akaun...</td></tr>';
+  try{
+    const data=await riderRequest({action:"list"});
+    const riders=data.riders||[];
+    target.innerHTML=riders.length?riders.map(r=>`<tr>
+      <td>${escapeHtml(r.display_name)}</td><td>${escapeHtml(r.username)}</td>
+      <td><span class="courier-pill">${escapeHtml(r.courier||"-")}</span></td>
+      <td>${escapeHtml(r.phone||"-")}</td><td><span class="status-pill ${r.is_active?"":"inactive"}">${r.is_active?"AKTIF":"DINYAHAKTIFKAN"}</span></td>
+      <td><button type="button" class="outline-button rider-toggle" data-user="${escapeHtml(r.user_id)}" data-active="${r.is_active?"1":"0"}">${r.is_active?"Nyahaktif":"Aktifkan"}</button></td>
+    </tr>`).join(""):'<tr><td colspan="6">Belum ada akaun rider didaftarkan.</td></tr>';
+    document.querySelectorAll(".rider-toggle").forEach(button=>button.addEventListener("click",async()=>{
+      button.disabled=true;
+      try{await riderRequest({action:"set_active",user_id:button.dataset.user,is_active:button.dataset.active!=="1"});await loadRiderAccounts();}
+      catch(err){$("rider-feedback").textContent=err.message||"Status akaun gagal dikemaskini.";button.disabled=false;}
+    }));
+  }catch(err){target.innerHTML=`<tr><td colspan="6">${escapeHtml(err.message||"Gagal memuatkan akaun.")}</td></tr>`;}
+}
+$("rider-refresh").addEventListener("click",loadRiderAccounts);
+$("rider-create-form").addEventListener("submit",async event=>{
+  event.preventDefault();
+  const button=$("rider-create-submit"),feedback=$("rider-feedback");
+  button.disabled=true;button.textContent="SEDANG DAFTAR...";feedback.textContent="";
+  try{
+    const result=await riderRequest({
+      action:"create",display_name:$("rider-name").value.trim(),
+      username:$("rider-username").value.trim().toLowerCase(),
+      email:$("rider-email").value.trim(),phone:$("rider-phone").value.trim(),
+      courier:$("rider-courier").value
+    });
+    feedback.textContent=result.message+" Username: "+result.rider.username+" | Password sementara: "+result.temporary_password+" — salin dan simpan sekarang; ia tidak akan dipaparkan semula.";
+    $("rider-create-form").reset();
+    await loadRiderAccounts();
+  }catch(err){feedback.textContent=err.message||"Pendaftaran akaun gagal.";}
+  button.disabled=false;button.textContent="DAFTAR AKAUN RIDER";
 });
 
 function openAccountModal(id){$(id).classList.add("open");$(id).setAttribute("aria-hidden","false");}
