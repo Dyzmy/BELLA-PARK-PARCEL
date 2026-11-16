@@ -1,2 +1,5 @@
 [functions.login-by-username]
 verify_jwt = false
+
+[functions.admin-reset-creator-password]
+verify_jwt = false
