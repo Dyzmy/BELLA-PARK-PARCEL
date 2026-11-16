@@ -53,7 +53,17 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .brand-copy small { letter-spacing: .12em; }
 .topbar-right { gap: 10px; }
 .live-dot { box-shadow: 0 0 0 4px rgb(120 210 170 / 12%); }
-.container { width: min(1240px, calc(100% - 40px)); }
+.app-shell { width: 100%; min-width: 0; overflow-x: clip; }
+.container {
+  width: min(1240px, calc(100% - 40px));
+  max-width: 100%;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+.page-section { width: 100%; min-width: 0; }
+.page-section > section { width: 100%; min-width: 0; }
+.table-wrap { width: 100%; min-width: 0; }
+
 .welcome { align-items: flex-end; gap: 18px; }
 .welcome h1 { letter-spacing: -.045em; }
 .subtitle { max-width: 58ch; }
