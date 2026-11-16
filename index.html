@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/style.css?v=20261117-4">
+  <link rel="stylesheet" href="assets/css/style.css?v=20261117-5">
 </head>
 <body>
   <div class="app-shell">
@@ -31,6 +31,21 @@
         <div class="date-chip" id="today-label">TODAY</div>
       </section>
 
+      <section class="month-panel admin-rider-panel" id="admin-rider-panel" hidden>
+        <div class="panel-heading"><div><p class="eyebrow">ADMIN CONTROL</p><h2>Pengurusan Driver / Rider</h2></div><span class="month-hint">Akaun scanner · SPX / J&amp;T / NINJA</span></div>
+        <form id="rider-create-form" class="rider-form">
+          <label>Nama penuh<input id="rider-name" maxlength="100" required placeholder="Nama driver / rider"></label>
+          <label>Username login<input id="rider-username" minlength="3" maxlength="32" pattern="[a-zA-Z0-9._-]+" required placeholder="contoh: ali.spx"></label>
+          <label>Email pemulihan<input id="rider-email" type="email" required placeholder="Email aktif rider"></label>
+          <label>Nombor telefon<input id="rider-phone" maxlength="30" required placeholder="01XXXXXXXX"></label>
+          <label>Courier<select id="rider-courier" required><option value="SPX">SPX</option><option value="J&amp;T">J&amp;T</option><option value="NINJA">NINJA</option></select></label>
+          <button class="auth-submit" id="rider-create-submit" type="submit">DAFTAR AKAUN RIDER</button>
+        </form>
+        <p class="rider-feedback" id="rider-feedback" role="status"></p>
+        <div class="rider-list-heading"><strong>Senarai Akaun Rider</strong><button class="outline-button" id="rider-refresh" type="button">Muat semula</button></div>
+        <div class="table-wrap"><table><thead><tr><th>NAMA</th><th>USERNAME</th><th>COURIER</th><th>TELEFON</th><th>STATUS</th><th>TINDAKAN</th></tr></thead><tbody id="rider-list-body"><tr><td colspan="6">Memuatkan...</td></tr></tbody></table></div>
+        <p class="account-note">Password sementara dijana secara automatik dan hanya dipaparkan sekali selepas pendaftaran berjaya. Serahkan kepada rider secara peribadi; rider boleh menukarnya melalui Profile.</p>
+      </section>
       <section class="stats-grid" aria-label="Parcel summary">
         <article class="stat-card total-card">
           <div class="stat-top"><span class="stat-label">TOTAL PARCEL</span><span class="stat-icon">▦</span></div>
@@ -121,6 +136,6 @@
       location.replace("reset-password.html" + location.hash);
     }
   </script>
-  <script src="assets/js/dashboard.js?v=20261117-4"></script>
+  <script src="assets/js/dashboard.js?v=20261117-5"></script>
 </body>
 </html>
