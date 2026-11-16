@@ -161,7 +161,11 @@ function renderDrivers() {
     const current=new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Kuala_Lumpur",year:"numeric",month:"2-digit"}).format(new Date())+"-01";
     const keys=[...new Set(pickupRecords.filter(r=>r.rider===activeDriver).map(r=>r.month))].sort().reverse();
     activeMonthKey=keys.includes(current)?current:(keys[0]||current);
-    renderDrivers(); renderMonthSummary(); renderRecords();
+    renderDrivers();
+    renderMonthSummary();
+    renderRecords();
+    // Open the parcel table immediately after a driver is selected.
+    showPage("parcels");
   }));
 }
 function renderMonthSummary() {
