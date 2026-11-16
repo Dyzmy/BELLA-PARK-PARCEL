@@ -112,6 +112,13 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="assets/js/dashboard.js?v=20261116-2"></script>
+  <script>
+    // Recovery links currently redirect to the site root; move their token fragment
+    // to the dedicated password-reset page without displaying it in the URL elsewhere.
+    if (location.hash.includes("type=recovery") || (location.hash.includes("access_token=") && location.hash.includes("type=recovery"))) {
+      location.replace("reset-password.html" + location.hash);
+    }
+  </script>
+  <script src="assets/js/dashboard.js?v=20261116-3"></script>
 </body>
 </html>
