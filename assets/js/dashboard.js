@@ -202,16 +202,19 @@ function renderRecords() {
     const dayRecords=records.filter(r=>r.dateKey===key);
     const visible=dayRecords.filter(r=>(courierFilter==="ALL"||r.courier===courierFilter)&&
       [r.dateKey,r.time,r.courier,r.rider,...r.tracking].join(" ").toLowerCase().includes(query));
-    if(query||courierFilter!=="ALL"){if(!visible.length)continue;}
-    const pagi=dayRecords.filter(r=>r.hour<14);
-    const petang=dayRecords.filter(r=>r.hour>=14&&r.hour<=17);
-    const luar=dayRecords.filter(r=>r.hour>17);
+    if(!visible.length)continue;
+    const inWindow=(record,start,end)=>{
+      const minutes=record.hour*60+record.minute;
+      return minutes>=start&&minutes<=end;
+    };
+    const pagi=visible.filter(r=>inWindow(r,540,780));
+    const petang=visible.filter(r=>inWindow(r,840,1050));
+    const luar=visible.filter(r=>!inWindow(r,540,780)&&!inWindow(r,840,1050));
     const netCount=rs=>rs.reduce((n,r)=>n+r.parcelDetails.filter(p=>p.review_status!=="pangkah"&&p.delivery_status!=="cancelled").length,0);
     const pagiTotal=netCount(pagi);
     const petangTotal=netCount(petang);
-    const total=netCount(dayRecords);
-    const couriers=[...new Set(dayRecords.map(r=>r.courier))].join(", ");
-    const detailIds=dayRecords.map(r=>r.id).join(",");
+    const total=netCount(visible);
+    const couriers=[...new Set(visible.map(r=>r.courier))].join(", ");
     rows.push(`<tr><td>${formatDateKey(key)}</td>
       <td>${pagi.length?`<button class="total-link" type="button" data-records="${escapeHtml(pagi.map(r=>r.id).join(","))}">${pagiTotal.toLocaleString("ms-MY")}#</button>`:""}</td>
       <td>${petang.length?`<button class="total-link" type="button" data-records="${escapeHtml(petang.map(r=>r.id).join(","))}">${petangTotal.toLocaleString("ms-MY")}#</button>`:""}</td>
@@ -264,9 +267,11 @@ $("export-button").addEventListener("click",()=>{
   for(let d=1;d<=days;d++){
     const key=year+"-"+String(month).padStart(2,"0")+"-"+String(d).padStart(2,"0");
     const rs=recordsForMonth(activeMonthKey).filter(r=>r.dateKey===key);
-    const morning=netParcelCount(rs.filter(r=>r.hour<14));
-    const afternoon=netParcelCount(rs.filter(r=>r.hour>=14&&r.hour<=17));
-    lines.push([activeDriver,activeMonthKey,key,morning||"",afternoon||netParcelCount(rs.filter(r=>!(r.hour*60+r.minute>=540&&r.hour*60+r.minute<=780)&&!(r.hour*60+r.minute>=840&&r.hour*60+r.minute<=1050)))||"",[...new Set(rs.map(r=>r.courier))].join(", "),netParcelCount(rs)||""]);
+    const inWindow=(record,start,end)=>{const minutes=record.hour*60+record.minute;return minutes>=start&&minutes<=end;};
+    const morning=netParcelCount(rs.filter(r=>inWindow(r,540,780)));
+    const afternoon=netParcelCount(rs.filter(r=>inWindow(r,840,1050)));
+    const outside=netParcelCount(rs.filter(r=>!inWindow(r,540,780)&&!inWindow(r,840,1050)));
+    lines.push([activeDriver,activeMonthKey,key,morning||"",afternoon||"",[...new Set(rs.map(r=>r.courier))].join(", "),netParcelCount(rs)||""]);
   }
   const csv=lines.map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(",")).join("\r\n");
   const blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8"}); const url=URL.createObjectURL(blob);
