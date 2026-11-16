@@ -247,28 +247,11 @@ $("profile-form").addEventListener("submit",async e=>{
   catch(err){$("profile-message").textContent=err.message||"Kemaskini gagal.";}
   b.disabled=false;b.textContent="SIMPAN KEMASKINI";
 });
-$("forgot-password-button").addEventListener("click",async()=>{
+$("forgot-password-button").addEventListener("click",()=>{
   const identity=$("login-email").value.trim();
-  const button=$("forgot-password-button");
-  if(!identity.includes("@")){
-    showMessage("Masukkan email berdaftar dahulu (bukan username). Contoh: nama@email.com");
-    $("login-email").focus();
-    return;
-  }
-  button.disabled=true;
-  button.textContent="MENGHANTAR...";
-  showMessage("Sedang meminta pautan reset password...",false);
-  try {
-    const redirectTo=new URL("reset-password.html",window.location.href).href;
-    const {error}=await client.auth.resetPasswordForEmail(identity,{redirectTo});
-    if(error) throw error;
-    showMessage("Permintaan berjaya dihantar jika email berdaftar. Semak Inbox dan Spam.",false);
-  } catch(err) {
-    showMessage("Reset gagal: "+(err?.message||"Ralat sambungan. Cuba lagi."));
-  } finally {
-    button.disabled=false;
-    button.textContent="Lupa Password?";
-  }
+  const target=new URL("forgot-password.html",window.location.href);
+  if(identity.includes("@"))target.searchParams.set("email",identity);
+  window.location.assign(target.href);
 });
 $("login-form").addEventListener("submit",async event=>{
   event.preventDefault();const button=$("login-submit");button.disabled=true;button.textContent="SEDANG LOG MASUK...";showMessage("",false);
