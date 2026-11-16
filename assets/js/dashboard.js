@@ -7,7 +7,8 @@ let pickupRecords = [];
 let activeDriver = null;
 let activeMonthKey = null;
 let activeProfile = null;
-let refreshInProgress = false;
+let activePage = "overview";
+let navigationBound = false;
 
 // Remember only the account identifier; never store passwords in local storage.
 try {
@@ -48,6 +49,7 @@ function setSignedIn(user) {
 }
 function showPage(page) {
   if(page==="account"){refreshProfilePanel();openAccountModal("profile-modal");return;}
+  activePage = page;
   document.querySelectorAll("[data-page-panel]").forEach(panel=>{
     panel.hidden=panel.dataset.pagePanel!==page;
   });
@@ -59,31 +61,38 @@ function showPage(page) {
 function setupNavigation(role) {
   document.querySelectorAll(".admin-nav").forEach(button=>{button.hidden=role!=="admin";});
   $("page-riders").hidden=role!=="admin";
-  document.querySelectorAll(".nav-item").forEach(button=>{
-    button.addEventListener("click",()=>showPage(button.dataset.page));
-  });
-  showPage("overview");
+  if(!navigationBound){
+    document.querySelectorAll(".nav-item").forEach(button=>{
+      button.addEventListener("click",()=>showPage(button.dataset.page));
+    });
+    navigationBound=true;
+  }
+  if(activePage==="riders"&&role!=="admin") activePage="overview";
+  showPage(activePage);
 }
 function setSignedOut() {
+  activePage="overview";
   $("auth-screen").hidden=false; $("dashboard-content").hidden=true;
   $("logout-button").hidden=true; $("profile-button").hidden=true; $("connection-label").textContent="SECURE STAFF DASHBOARD";
 }
 async function loadDashboard() {
   const {data:{user},error:userError}=await client.auth.getUser();
-  if(userError||!user) {
+  if(userError) throw userError;
+  if(!user) {
     activeProfile=null;
-    await client.auth.signOut(); setSignedOut();
-    showMessage("Sesi login tidak sah atau telah tamat. Sila log masuk semula.");
+    setSignedOut();
+    showMessage("Sesi login tiada. Sila log masuk semula.");
     return false;
   }
   const {data:profile,error:profileError}=await client.from("staff_profiles")
     .select("user_id,display_name,role,username,courier,is_active")
     .eq("user_id",user.id)
     .maybeSingle();
-  if(profileError||!profile||![ "admin","scanner","viewer" ].includes(profile.role)) {
+  if(profileError) throw profileError;
+  if(!profile||![ "admin","scanner","viewer" ].includes(profile.role)) {
     activeProfile=null;
     await client.auth.signOut(); setSignedOut();
-    showMessage(profileError ? "Gagal membaca profil staf: "+profileError.message : "Akaun ini tiada profil staf yang sah untuk UID login ini. Semak staff_profiles dan role.");
+    showMessage("Akaun ini tiada profil staf yang sah untuk UID login ini. Semak staff_profiles dan role.");
     return false;
   }
   activeProfile=profile;
@@ -219,11 +228,11 @@ function renderRecords() {
     const petangTotal=netCount(petang);
     const total=netCount(visible);
     const couriers=[...new Set(visible.map(r=>r.courier))].join(", ");
-    rows.push(`<tr><td>${formatDateKey(key)}</td>
-      <td>${pagi.length?`<button class="total-link" type="button" data-records="${escapeHtml(pagi.map(r=>r.id).join(","))}">${pagiTotal.toLocaleString("ms-MY")}#</button>`:""}</td>
-      <td>${petang.length?`<button class="total-link" type="button" data-records="${escapeHtml(petang.map(r=>r.id).join(","))}">${petangTotal.toLocaleString("ms-MY")}#</button>`:""}</td>
-      <td>${escapeHtml(couriers)}${luar.length?`<small class="outside-hours">Luar waktu: ${netParcelCount(luar)}#</small>`:""}</td>
-      <td><strong>${total?total.toLocaleString("ms-MY")+"#":""}</strong></td></tr>`);
+    rows.push(`<tr><td data-label="Tarikh">${formatDateKey(key)}</td>
+      <td data-label="Pagi · 9:00–1:00">${pagi.length?`<button class="total-link" type="button" data-records="${escapeHtml(pagi.map(r=>r.id).join(","))}">${pagiTotal.toLocaleString("ms-MY")}#</button>`:"—"}</td>
+      <td data-label="Petang · 2:00–5:30">${petang.length?`<button class="total-link" type="button" data-records="${escapeHtml(petang.map(r=>r.id).join(","))}">${petangTotal.toLocaleString("ms-MY")}#</button>`:"—"}</td>
+      <td data-label="Courier">${escapeHtml(couriers)}${luar.length?`<small class="outside-hours">Luar waktu: ${netParcelCount(luar)}#</small>`:""}</td>
+      <td data-label="Jumlah"><strong>${total?total.toLocaleString("ms-MY")+"#":"0"}</strong></td></tr>`);
   }
   $("records-body").innerHTML=rows.length?rows.join(""):'<tr><td class="empty-row" colspan="5">Tiada rekod sepadan.</td></tr>';
   document.querySelectorAll("[data-records]").forEach(button=>button.addEventListener("click",()=>showDetails(button.dataset.records.split(","))));
@@ -412,7 +421,12 @@ $("login-form").addEventListener("submit",async event=>{
     const authorized=await loadDashboard();
     if(!authorized)return;
   }
-  catch(err){await client.auth.signOut();setSignedOut();showMessage("Gagal membaca database: "+(err.message||"Semak akses Supabase."));}
+  catch(err){
+    setSignedIn(data.user);
+    $("connection-label").textContent="SAMBUNGAN TERGANGGU";
+    console.error("Dashboard load failed:",err);
+    alert("Login berjaya, tetapi data belum dapat dimuatkan. Sesi dikekalkan. Semak internet dan cuba muat semula.");
+  }
 });
 $("logout-button").addEventListener("click",async()=>{await client.auth.signOut();setSignedOut();});
 (async function init(){
@@ -420,11 +434,9 @@ $("logout-button").addEventListener("click",async()=>{await client.auth.signOut(
   const {data:{session}}=await client.auth.getSession();
   if(!session){setSignedOut();return;}
   try{setSignedIn(session.user);await loadDashboard();}
-  catch(err){await client.auth.signOut();setSignedOut();showMessage("Sambungan database gagal: "+(err.message||"Cuba lagi."));}
+  catch(err){
+    setSignedIn(session.user);
+    $("connection-label").textContent="SAMBUNGAN TERGANGGU";
+    console.error("Dashboard restore failed:",err);
+  }
 })();
-setInterval(async()=>{
-  if(!activeProfile||refreshInProgress)return;
-  refreshInProgress=true;
-  try{await loadDashboard();}catch(_){}
-  finally{refreshInProgress=false;}
-},30000);
