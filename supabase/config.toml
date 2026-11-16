@@ -3,3 +3,6 @@ verify_jwt = false
 
 [functions.admin-reset-creator-password]
 verify_jwt = false
+
+[functions.admin-manage-riders]
+verify_jwt = true
