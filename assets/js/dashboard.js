@@ -262,7 +262,17 @@ $("login-form").addEventListener("submit",async event=>{
     }else if(!error){error=new Error(data?.error||"Log masuk gagal.");}
   }
   button.disabled=false;button.textContent="LOG MASUK";
-  if(error){showMessage(error.message||"Log masuk gagal. Semak username dan password.");return;}
+  if(error){
+    let detail=error.message||"Log masuk gagal. Semak username dan password.";
+    // Supabase FunctionsHttpError stores the actual Edge Function response in context.
+    if(error.context&&typeof error.context.json==="function"){
+      try{
+        const body=await error.context.json();
+        if(body?.error)detail=body.error;
+      }catch(_){}
+    }
+    showMessage(detail);return;
+  }
   try{setSignedIn(data.user);await loadDashboard();await maybeShowSetupPopup(data.user);}
   catch(err){await client.auth.signOut();setSignedOut();showMessage("Gagal membaca database: "+(err.message||"Semak akses Supabase."));}
 });
