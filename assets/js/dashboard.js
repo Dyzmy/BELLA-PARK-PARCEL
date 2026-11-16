@@ -138,6 +138,9 @@ async function loadDashboard() {
   return true;
 }
 function recordsForMonth(key) { return pickupRecords.filter(r=>r.rider===activeDriver&&r.month===key); }
+function netParcelCount(records) {
+  return records.reduce((n,r)=>n+r.parcelDetails.filter(p=>p.review_status!=="pangkah"&&p.delivery_status!=="cancelled").length,0);
+}
 function renderDrivers() {
   const drivers=[...new Set(pickupRecords.map(r=>r.rider))].sort((a,b)=>a.localeCompare(b));
   $("driver-summary").innerHTML=drivers.length?drivers.map(name=>{
@@ -173,11 +176,11 @@ function renderMonthSummary() {
     activeMonthKey=button.dataset.month; renderMonthSummary(); renderRecords();
   }));
   const selected=recordsForMonth(activeMonthKey);
-  const total=selected.reduce((n,r)=>n+r.tracking.length,0);
+  const total=netParcelCount(selected);
   $("grand-total").textContent=total.toLocaleString("ms-MY");
-  $("spx-total").textContent=selected.filter(r=>r.courier==="SPX").reduce((n,r)=>n+r.tracking.length,0).toLocaleString("ms-MY");
-  $("jt-total").textContent=selected.filter(r=>r.courier==="J&T").reduce((n,r)=>n+r.tracking.length,0).toLocaleString("ms-MY");
-  $("ninja-total").textContent=selected.filter(r=>r.courier==="NINJA").reduce((n,r)=>n+r.tracking.length,0).toLocaleString("ms-MY");
+  $("spx-total").textContent=netParcelCount(selected.filter(r=>r.courier==="SPX")).toLocaleString("ms-MY");
+  $("jt-total").textContent=netParcelCount(selected.filter(r=>r.courier==="J&T")).toLocaleString("ms-MY");
+  $("ninja-total").textContent=netParcelCount(selected.filter(r=>r.courier==="NINJA")).toLocaleString("ms-MY");
   document.querySelector(".total-card .stat-label").textContent="TOTAL PARCEL · "+(activeDriver||"DRIVER")+" · "+monthTitle(activeMonthKey);
   document.querySelector(".total-card .stat-foot").textContent="Jumlah parcel individu bagi bulan dipilih";
   $("archive-driver-title").textContent=activeDriver||"Pilih driver";
@@ -207,7 +210,7 @@ function renderRecords() {
     rows.push(`<tr><td>${formatDateKey(key)}</td>
       <td>${pagi.length?`<button class="total-link" type="button" data-records="${escapeHtml(pagi.map(r=>r.id).join(","))}">${pagiTotal.toLocaleString("ms-MY")}#</button>`:""}</td>
       <td>${petang.length?`<button class="total-link" type="button" data-records="${escapeHtml(petang.map(r=>r.id).join(","))}">${petangTotal.toLocaleString("ms-MY")}#</button>`:""}</td>
-      <td>${escapeHtml(couriers)}${luar.length?`<small class="outside-hours">Luar waktu: ${luar.reduce((n,r)=>n+r.tracking.length,0)}#</small>`:""}</td>
+      <td>${escapeHtml(couriers)}${luar.length?`<small class="outside-hours">Luar waktu: ${netParcelCount(luar)}#</small>`:""}</td>
       <td><strong>${total?total.toLocaleString("ms-MY")+"#":""}</strong></td></tr>`);
   }
   $("records-body").innerHTML=rows.length?rows.join(""):'<tr><td class="empty-row" colspan="5">Tiada rekod sepadan.</td></tr>';
@@ -259,9 +262,9 @@ $("export-button").addEventListener("click",()=>{
   for(let d=1;d<=days;d++){
     const key=year+"-"+String(month).padStart(2,"0")+"-"+String(d).padStart(2,"0");
     const rs=recordsForMonth(activeMonthKey).filter(r=>r.dateKey===key);
-    const morning=rs.filter(r=>r.hour<14).reduce((n,r)=>n+r.tracking.length,0);
-    const afternoon=rs.filter(r=>r.hour>=14&&r.hour<=17).reduce((n,r)=>n+r.tracking.length,0);
-    lines.push([activeDriver,activeMonthKey,key,morning||"",afternoon||rs.filter(r=>!(r.hour*60+r.minute>=540&&r.hour*60+r.minute<=780)&&!(r.hour*60+r.minute>=840&&r.hour*60+r.minute<=1050)).reduce((n,r)=>n+r.tracking.length,0)||"",[...new Set(rs.map(r=>r.courier))].join(", "),rs.reduce((n,r)=>n+r.tracking.length,0)||""]);
+    const morning=netParcelCount(rs.filter(r=>r.hour<14));
+    const afternoon=netParcelCount(rs.filter(r=>r.hour>=14&&r.hour<=17));
+    lines.push([activeDriver,activeMonthKey,key,morning||"",afternoon||netParcelCount(rs.filter(r=>!(r.hour*60+r.minute>=540&&r.hour*60+r.minute<=780)&&!(r.hour*60+r.minute>=840&&r.hour*60+r.minute<=1050)))||"",[...new Set(rs.map(r=>r.courier))].join(", "),netParcelCount(rs)||""]);
   }
   const csv=lines.map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(",")).join("\r\n");
   const blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8"}); const url=URL.createObjectURL(blob);
