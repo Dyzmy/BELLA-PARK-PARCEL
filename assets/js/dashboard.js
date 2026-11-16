@@ -234,18 +234,15 @@ function showDetails(ids) {
     const status=p.delivery_status==="cancelled"?"DIBATALKAN OLEH ADMIN":p.delivery_status==="done"?"DONE":"PICKUP";
     const review=p.review_status==="pangkah"?"PANGKAH":"RIGHT";
     const controls=activeProfile?.role==="admin"
-      ?` <div class="parcel-admin-actions"><button type="button" class="outline-button" data-parcel-action="right" data-parcel-id="${p.id}">RIGHT</button><button type="button" class="outline-button" data-parcel-action="pangkah" data-parcel-id="${p.id}">PANGKAH</button><button type="button" class="outline-button" data-parcel-action="cancelled" data-parcel-id="${p.id}">BATAL</button></div>`
+      ?` <div class="parcel-admin-actions"><button type="button" class="outline-button" data-parcel-action="right" data-parcel-id="${p.id}">RIGHT</button><button type="button" class="outline-button" data-parcel-action="pangkah" data-parcel-id="${p.id}">PANGKAH</button></div>`
       :"";
     return `<li><strong>${escapeHtml(p.tracking)}</strong><small>${status} · ${review}</small>${controls}</li>`;
   }).join("");
   document.querySelectorAll("[data-parcel-action]").forEach(button=>button.addEventListener("click",async()=>{
     button.disabled=true;
     try{
-      const rpc=button.dataset.parcelAction==="cancelled"?"admin_cancel_parcel":"admin_set_parcel_review";
-      const args=button.dataset.parcelAction==="cancelled"
-        ?{p_parcel_id:button.dataset.parcelId}
-        :{p_parcel_id:button.dataset.parcelId,p_review_status:button.dataset.parcelAction};
-      const {error}=await client.rpc(rpc,args);
+      const args={p_parcel_id:button.dataset.parcelId,p_review_status:button.dataset.parcelAction};
+      const {error}=await client.rpc("admin_set_parcel_review",args);
       if(error)throw error;
       await loadDashboard();
       const refreshed=pickupRecords.filter(r=>ids.includes(r.id));
