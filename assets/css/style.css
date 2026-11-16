@@ -103,3 +103,41 @@
 #dashboard-content{padding-bottom:105px}
 @media(min-width:900px){.bottom-nav{bottom:22px}.nav-item{padding:9px 12px}.nav-item small{font-size:10px}}
 @media(max-width:480px){.bottom-nav{bottom:8px;width:calc(100% - 16px);padding:6px;border-radius:13px}.nav-item{padding:7px 2px}.nav-item span{font-size:18px}.nav-item small{font-size:8px}#dashboard-content{padding-bottom:90px}}
+
+
+/* Premium Plus visual refinement */
+.page-section:not([hidden]){animation:bpPageIn .24s ease both}
+@keyframes bpPageIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+.stat-card,.month-panel,.records-panel,.driver-card{transition:box-shadow .2s ease,border-color .2s ease,transform .2s ease}
+.stat-card:not(.total-card):hover{transform:translateY(-2px);border-color:#ddc99f;box-shadow:0 12px 28px #1d2b3b0d}
+.total-card{box-shadow:0 10px 26px #17233320}
+.month-panel{background:#fff;border:1px solid var(--line);border-radius:8px;padding:24px 25px;margin:0 0 24px;box-shadow:0 7px 25px #1d2b3b08}
+.month-panel .panel-heading{gap:14px}
+.month-hint{color:#929ba5;font-size:10px;letter-spacing:.35px;text-align:right}
+.records-panel,.month-panel{scroll-margin-top:20px}
+.panel-heading{gap:14px}
+.panel-heading .eyebrow{margin-bottom:7px}
+.table-wrap table tbody tr{transition:background .15s ease}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #c8a96a;outline-offset:2px}
+.nav-item{transition:background .18s ease,color .18s ease,transform .18s ease}
+.nav-item:active{transform:scale(.96)}
+.outline-button,.auth-submit{transition:background .18s ease,border-color .18s ease,transform .18s ease,box-shadow .18s ease}
+.outline-button:hover{box-shadow:0 4px 12px #8c71411a}
+.outline-button:active,.auth-submit:active{transform:translateY(1px)}
+@media(min-width:900px){
+  .container{width:min(1240px,92%)}
+  .stats-grid{gap:18px}
+  .stat-card{padding:22px 24px}
+  .month-panel,.records-panel{padding:27px 29px}
+}
+@media(max-width:760px){
+  .month-panel{padding:19px 15px;margin-bottom:17px}
+  .month-panel .panel-heading,.records-panel .panel-heading{align-items:flex-start}
+  .month-hint{max-width:42%;line-height:1.5}
+  .stat-card{border-radius:9px}
+  .bottom-nav{backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+}
+@media(prefers-reduced-motion:reduce){
+  .page-section:not([hidden]){animation:none}
+  .stat-card,.month-panel,.records-panel,.driver-card,.nav-item,.outline-button,.auth-submit{transition:none}
+}
