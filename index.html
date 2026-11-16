@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/style.css?v=20261117-1">
+  <link rel="stylesheet" href="assets/css/style.css?v=20261117-2">
 </head>
 <body>
   <div class="app-shell">
@@ -88,6 +88,7 @@
       <p class="auth-description">Log masuk menggunakan akaun staf yang telah didaftarkan.</p>
       <label>Username / Email<input id="login-email" type="text" autocomplete="username" required placeholder="Username atau email staf"></label>
       <label>Password<input id="login-password" type="password" autocomplete="current-password" required placeholder="Password"></label>
+      <label class="remember-row"><input id="remember-username" type="checkbox"> <span>Ingat username / email pada peranti ini</span></label>
       <button class="auth-submit" id="login-submit" type="submit">LOG MASUK</button>
       <button class="forgot-password-link" id="forgot-password-button" type="button">Lupa Password?</button>
       <p class="auth-message" id="auth-message" role="status"></p>
@@ -120,6 +121,6 @@
       location.replace("reset-password.html" + location.hash);
     }
   </script>
-  <script src="assets/js/dashboard.js?v=20261117-1"></script>
+  <script src="assets/js/dashboard.js?v=20261117-2"></script>
 </body>
 </html>
