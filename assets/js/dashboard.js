@@ -261,7 +261,7 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape")closeDetail();});
 $("search-input").addEventListener("input",renderRecords);
 $("courier-filter").addEventListener("change",renderRecords);
 $("export-button").addEventListener("click",()=>{
-  const lines=[["Driver / Rider","Bulan","Tarikh","Pagi","Petang","Courier","Jumlah"]];
+  const lines=[["Driver / Rider","Bulan","Tarikh","Pagi","Petang","Luar waktu","Courier","Jumlah"]];
   const [year,month]=activeMonthKey.split("-").map(Number);
   const days=new Date(year,month,0).getDate();
   for(let d=1;d<=days;d++){
@@ -271,7 +271,7 @@ $("export-button").addEventListener("click",()=>{
     const morning=netParcelCount(rs.filter(r=>inWindow(r,540,780)));
     const afternoon=netParcelCount(rs.filter(r=>inWindow(r,840,1050)));
     const outside=netParcelCount(rs.filter(r=>!inWindow(r,540,780)&&!inWindow(r,840,1050)));
-    lines.push([activeDriver,activeMonthKey,key,morning||"",afternoon||"",[...new Set(rs.map(r=>r.courier))].join(", "),netParcelCount(rs)||""]);
+    lines.push([activeDriver,activeMonthKey,key,morning||"",afternoon||"",outside||"",[...new Set(rs.map(r=>r.courier))].join(", "),netParcelCount(rs)||""]);
   }
   const csv=lines.map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(",")).join("\r\n");
   const blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8"}); const url=URL.createObjectURL(blob);
