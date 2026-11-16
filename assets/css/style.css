@@ -141,3 +141,77 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
   .page-section:not([hidden]){animation:none}
   .stat-card,.month-panel,.records-panel,.driver-card,.nav-item,.outline-button,.auth-submit{transition:none}
 }
+
+
+/* BELLA PARK FULL DARK PREMIUM BUSINESS THEME */
+:root{
+  --bg:#080f1b;
+  --surface:#111c2b;
+  --surface-2:#172538;
+  --surface-3:#1d2d42;
+  --line:#2b3b50;
+  --text:#edf2f7;
+  --muted:#a7b3c2;
+  --gold:#d6b875;
+  --gold-soft:#b99a5d;
+}
+html,body{background:#080f1b!important;color:#edf2f7!important;font-family:"Inter","Manrope",sans-serif!important}
+body{background-image:radial-gradient(ellipse at 50% -20%,#1b2b40 0%,#080f1b 62%)!important}
+.topbar{background:#0b1422!important;border-bottom:1px solid #b99a5d55!important}
+.brand-copy strong,.welcome h1,.panel-heading h2,.records-panel h2{color:#f3f5f8!important}
+.brand-copy small,.subtitle,.stat-foot,.month-hint,.footer{color:#9eacbc!important}
+.eyebrow{color:#d6b875!important}
+.date-chip{background:#1b2a3d!important;border:1px solid #b99a5d77!important;color:#e4c98d!important}
+.stat-card,.month-panel,.records-panel,.driver-card,.month-card,
+.auth-card,.account-modal,.detail-modal{
+ background:linear-gradient(145deg,#172538,#101b2a)!important;
+ color:#edf2f7!important;border:1px solid #34465d!important;
+ box-shadow:0 12px 32px #0005!important;
+}
+.stat-card:hover,.driver-card:hover,.month-card:hover{border-color:#c8a96a!important}
+.stat-value,.month-card strong,.driver-card strong{color:#f3d99f!important}
+.stat-label,.driver-card-label,.month-card-title{color:#d6b875!important}
+.month-card,.driver-card{background:#142236!important}
+.month-card.active,.driver-card.active{background:#26334a!important;border-color:#e0c17b!important}
+.month-card-foot,.driver-card-foot,.month-empty{color:#a7b3c2!important}
+.panel-heading h2,.rider-list-heading{color:#f0f3f7!important}
+.table-wrap{background:#101b2a!important;border:1px solid #2d3d52!important;border-radius:7px}
+table{color:#e8edf4!important}
+thead th{background:#1c2b40!important;color:#dfc58e!important;border-color:#34465d!important}
+tbody td{background:#111e2e!important;color:#dce4ed!important;border-color:#29394d!important}
+tbody tr:hover td{background:#1a2a3e!important}
+.table-note,.account-copy,.auth-description{color:#a7b3c2!important}
+.search-box,.filter-wrap select,.rider-form input,.rider-form select,
+.auth-card input,.account-modal input{
+ background:#0c1726!important;color:#f0f3f7!important;border:1px solid #3a4b60!important;
+}
+.search-box input{color:#f0f3f7!important;background:transparent!important}
+.search-box input::placeholder,.auth-card input::placeholder,.account-modal input::placeholder{color:#8291a3!important}
+.auth-card h1,.account-modal h2,.detail-modal h2{color:#f2f4f7!important}
+.auth-card label,.account-modal label,.rider-form label{color:#c4ced9!important}
+.auth-mark{background:#172538!important;color:#e3c786!important;border-color:#d6b875!important}
+.auth-submit{background:linear-gradient(120deg,#d6b875,#b99550)!important;color:#111a27!important}
+.forgot-password-link{color:#e0c17b!important}
+.account-close{background:#b92d3b!important}
+.account-close:hover{background:#d33a49!important}
+.account-note,.rider-feedback,.profile-summary,.detail-meta{
+ background:#1b2a3d!important;color:#d9e1eb!important;border:1px solid #34465d!important;
+}
+.profile-summary strong,.meta-item strong{color:#f0f3f7!important}
+.profile-summary small,.meta-item small{color:#b3bfcd!important}
+.tracking-heading{color:#f0f3f7!important;border-color:#34465d!important}
+.tracking-heading span,.tracking-list li{color:#c2ccd8!important}
+.tracking-list li{border-color:#2b3b50!important}
+.account-backdrop,.modal-backdrop{background:#030812df!important}
+.bottom-nav{background:#0d1928!important;border-color:#c8a96a99!important}
+.nav-item{color:#b6c2d0!important}
+.nav-item.active{background:#d6b875!important;color:#101722!important}
+.outline-button{background:#172538!important;color:#e5c98f!important;border-color:#b99a5d!important}
+.outline-button:hover{background:#24364d!important}
+.rider-list-heading strong{color:#edf2f7!important}
+.status-pill{background:#24364a!important}
+.auth-message,.account-message{color:#80d3b0!important}
+.auth-message.error{color:#ff929b!important}
+@media(max-width:760px){
+ .stat-card,.month-panel,.records-panel,.driver-card,.month-card{box-shadow:0 8px 22px #0004!important}
+}
