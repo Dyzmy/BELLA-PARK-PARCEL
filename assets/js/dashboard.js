@@ -58,7 +58,7 @@ async function loadDashboard() {
     return false;
   }
   const {data:profile,error:profileError}=await client.from("staff_profiles")
-    .select("user_id,display_name,role,username")
+    .select("user_id,display_name,role,username,courier,is_active")
     .eq("user_id",user.id)
     .maybeSingle();
   if(profileError||!profile||![ "admin","scanner","viewer" ].includes(profile.role)) {
@@ -71,15 +71,15 @@ async function loadDashboard() {
   $("admin-rider-panel").hidden=profile.role!=="admin";
   if(profile.role==="admin") await loadRiderAccounts();
   const {data:sessions,error:sessionError}=await client.from("pickup_sessions")
-    .select("id,courier,driver_name,picked_up_at,month_key").order("picked_up_at",{ascending:false}).limit(1000);
+    .select("id,courier,driver_name,picked_up_at,month_key,created_by").order("picked_up_at",{ascending:false}).limit(1000);
   if(sessionError) throw sessionError;
   const {data:parcels,error:parcelError}=await client.from("parcel_records_masked")
     .select("session_id,tracking_masked,created_at").limit(5000);
   if(parcelError) throw parcelError;
   const bySession=new Map();
   (parcels||[]).forEach(p=>{if(!bySession.has(p.session_id))bySession.set(p.session_id,[]);bySession.get(p.session_id).push(p.tracking_masked);});
-  pickupRecords=(sessions||[]).map(s=>({
-    id:s.id, timestamp:s.picked_up_at, dateKey:localDateKey(s.picked_up_at),
+  pickupRecords=(sessions||[]).filter(s=>profile.role==="admin"||s.created_by===user.id).map(s=>({
+    id:s.id, owner:s.created_by, timestamp:s.picked_up_at, dateKey:localDateKey(s.picked_up_at),
     month:localMonth(s.picked_up_at), time:formatTime(s.picked_up_at),
     hour:Number(localParts(s.picked_up_at).hour), minute:Number(localParts(s.picked_up_at).minute),
     courier:s.courier||"-", rider:(s.driver_name||"").trim()||"TIDAK DINYATAKAN",
@@ -88,7 +88,7 @@ async function loadDashboard() {
   const today=new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Kuala_Lumpur",year:"numeric",month:"2-digit"}).format(new Date());
   const currentMonth=today+"-01";
   const drivers=[...new Set(pickupRecords.map(r=>r.rider))].sort((a,b)=>a.localeCompare(b));
-  activeDriver=drivers[0]||null;
+  activeDriver=profile.role==="admin"?(drivers[0]||null):(profile.display_name||drivers[0]||null);
   const driverMonths=pickupRecords.filter(r=>r.rider===activeDriver).map(r=>r.month);
   activeMonthKey=driverMonths.includes(currentMonth)?currentMonth:[...new Set(driverMonths)].sort().reverse()[0]||currentMonth;
   $("year").textContent=localParts(new Date()).year;
