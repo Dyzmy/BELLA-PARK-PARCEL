@@ -8,6 +8,12 @@ let activeDriver = null;
 let activeMonthKey = null;
 let activeProfile = null;
 
+// Remember only the account identifier; never store passwords in local storage.
+try {
+  const savedIdentity = localStorage.getItem("bp_saved_identity");
+  if (savedIdentity) { $("login-email").value = savedIdentity; $("remember-username").checked = true; }
+} catch (_) {}
+
 function escapeHtml(value) {
   return String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 }
@@ -265,6 +271,7 @@ $("forgot-password-button").addEventListener("click",async()=>{
 $("login-form").addEventListener("submit",async event=>{
   event.preventDefault();const button=$("login-submit");button.disabled=true;button.textContent="SEDANG LOG MASUK...";showMessage("",false);
   const identity=$("login-email").value.trim();
+  try { if ($("remember-username").checked) localStorage.setItem("bp_saved_identity",identity); else localStorage.removeItem("bp_saved_identity"); } catch (_) {}
   let data,error;
   if(identity.includes("@")){
     ({data,error}=await client.auth.signInWithPassword({email:identity,password:$("login-password").value}));
