@@ -44,11 +44,21 @@ function setSignedOut() {
   $("logout-button").hidden=true; $("profile-button").hidden=true; $("connection-label").textContent="SECURE STAFF DASHBOARD";
 }
 async function loadDashboard() {
-  const {data:profile,error:profileError}=await client.from("staff_profiles").select("display_name,role,username").single();
-  if(profileError||!profile||!["admin","scanner","viewer"].includes(profile.role)) {
+  const {data:{user},error:userError}=await client.auth.getUser();
+  if(userError||!user) {
     activeProfile=null;
     await client.auth.signOut(); setSignedOut();
-    showMessage("Akaun ini tiada profil staf yang sah. Pentadbir perlu semak staff_profiles untuk username ini.");
+    showMessage("Sesi login tidak sah atau telah tamat. Sila log masuk semula.");
+    return false;
+  }
+  const {data:profile,error:profileError}=await client.from("staff_profiles")
+    .select("user_id,display_name,role,username")
+    .eq("user_id",user.id)
+    .maybeSingle();
+  if(profileError||!profile||![ "admin","scanner","viewer" ].includes(profile.role)) {
+    activeProfile=null;
+    await client.auth.signOut(); setSignedOut();
+    showMessage(profileError ? "Gagal membaca profil staf: "+profileError.message : "Akaun ini tiada profil staf yang sah untuk UID login ini. Semak staff_profiles dan role.");
     return false;
   }
   activeProfile=profile;
