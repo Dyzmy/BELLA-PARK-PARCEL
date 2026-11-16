@@ -76,3 +76,5 @@
 }
 .account-close:hover{background:#c91528;transform:scale(1.06)}
 .account-close:focus-visible{outline:3px solid #f3c6cb;outline-offset:3px}
+
+.remember-row{display:flex!important;align-items:center;gap:9px;margin:12px 0 2px!important;color:#66717e!important;font-size:12px!important;font-weight:500!important;cursor:pointer}.remember-row input{width:15px!important;height:15px!important;margin:0!important;accent-color:#9b7942;flex:0 0 auto}
