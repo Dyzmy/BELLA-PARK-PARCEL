@@ -89,3 +89,17 @@
 .status-pill.inactive{color:#b44747}
 .rider-toggle{padding:7px 9px;font-size:10px}
 @media(max-width:600px){.rider-form{grid-template-columns:1fr}.rider-form button{grid-column:auto}}
+
+
+/* BELLA PARK Premium Plus: compact page navigation */
+.page-section[hidden]{display:none!important}
+.bottom-nav{position:fixed;z-index:15;left:50%;bottom:14px;transform:translateX(-50%);width:min(620px,calc(100% - 28px));display:flex;justify-content:space-around;align-items:stretch;gap:4px;padding:8px;background:#111c2b;border:1px solid #c8a96a66;border-radius:15px;box-shadow:0 12px 38px #07101dcc}
+.nav-item{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:7px 3px;border:0;border-radius:10px;background:transparent;color:#aeb8c5;font:600 10px "DM Sans",sans-serif;cursor:pointer}
+.nav-item span{font-size:19px;line-height:1;color:#c8a96a}
+.nav-item small{font-size:9px;letter-spacing:.2px}
+.nav-item.active{background:#c8a96a;color:#101722}
+.nav-item.active span{color:#101722}
+.nav-item[hidden]{display:none!important}
+#dashboard-content{padding-bottom:105px}
+@media(min-width:900px){.bottom-nav{bottom:22px}.nav-item{padding:9px 12px}.nav-item small{font-size:10px}}
+@media(max-width:480px){.bottom-nav{bottom:8px;width:calc(100% - 16px);padding:6px;border-radius:13px}.nav-item{padding:7px 2px}.nav-item span{font-size:18px}.nav-item small{font-size:8px}#dashboard-content{padding-bottom:90px}}
