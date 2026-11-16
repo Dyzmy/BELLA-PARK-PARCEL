@@ -43,7 +43,25 @@ function showMessage(message,isError=true) {
 }
 function setSignedIn(user) {
   $("auth-screen").hidden=true; $("dashboard-content").hidden=false;
-  $("logout-button").hidden=false; $("profile-button").hidden=false; $("connection-label").textContent=user.email||"STAFF SIGNED IN";
+  $("logout-button").hidden=false; $("profile-button").hidden=true; $("connection-label").textContent=user.email||"STAFF SIGNED IN";
+}
+function showPage(page) {
+  if(page==="account"){refreshProfilePanel();openAccountModal("profile-modal");return;}
+  document.querySelectorAll("[data-page-panel]").forEach(panel=>{
+    panel.hidden=panel.dataset.pagePanel!==page;
+  });
+  document.querySelectorAll(".nav-item").forEach(button=>{
+    button.classList.toggle("active",button.dataset.page===page);
+  });
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function setupNavigation(role) {
+  document.querySelectorAll(".admin-nav").forEach(button=>{button.hidden=role!=="admin";});
+  $("page-riders").hidden=role!=="admin";
+  document.querySelectorAll(".nav-item").forEach(button=>{
+    button.addEventListener("click",()=>showPage(button.dataset.page));
+  });
+  showPage("overview");
 }
 function setSignedOut() {
   $("auth-screen").hidden=false; $("dashboard-content").hidden=true;
@@ -68,7 +86,9 @@ async function loadDashboard() {
     return false;
   }
   activeProfile=profile;
+  setupNavigation(profile.role);
   $("admin-rider-panel").hidden=profile.role!=="admin";
+  $("page-riders").hidden=profile.role!=="admin";
   if(profile.role==="admin") await loadRiderAccounts();
   const {data:sessions,error:sessionError}=await client.from("pickup_sessions")
     .select("id,courier,driver_name,picked_up_at,month_key,created_by").order("picked_up_at",{ascending:false}).limit(1000);
