@@ -241,6 +241,27 @@ $("profile-form").addEventListener("submit",async e=>{
   catch(err){$("profile-message").textContent=err.message||"Kemaskini gagal.";}
   b.disabled=false;b.textContent="SIMPAN KEMASKINI";
 });
+$("forgot-password-button").addEventListener("click",async()=>{
+  const identity=$("login-email").value.trim();
+  if(!identity.includes("@")){
+    showMessage("Masukkan email berdaftar dalam ruangan Username / Email untuk menerima pautan reset password.");
+    $("login-email").focus();
+    return;
+  }
+  const button=$("forgot-password-button");
+  button.disabled=true;
+  button.textContent="MENGHANTAR...";
+  showMessage("",false);
+  const redirectTo=new URL("reset-password.html",window.location.href).href;
+  const {error}=await client.auth.resetPasswordForEmail(identity,{redirectTo});
+  button.disabled=false;
+  button.textContent="Lupa Password?";
+  if(error){
+    showMessage("Tidak dapat menghantar pautan reset: "+error.message);
+    return;
+  }
+  showMessage("Jika email itu berdaftar, pautan reset password akan dihantar. Semak Inbox dan Spam.",false);
+});
 $("login-form").addEventListener("submit",async event=>{
   event.preventDefault();const button=$("login-submit");button.disabled=true;button.textContent="SEDANG LOG MASUK...";showMessage("",false);
   const identity=$("login-email").value.trim();
