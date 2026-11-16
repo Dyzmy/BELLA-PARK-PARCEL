@@ -215,3 +215,9 @@ tbody tr:hover td{background:#1a2a3e!important}
 @media(max-width:760px){
  .stat-card,.month-panel,.records-panel,.driver-card,.month-card{box-shadow:0 8px 22px #0004!important}
 }
+
+
+/* Parcel operations: compact admin controls and visible status labels. */
+.parcel-admin-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.parcel-admin-actions .outline-button{padding:6px 9px;font-size:10px;letter-spacing:.04em}
+.tracking-list li small{display:block;margin-top:4px;color:var(--muted,#9aa6ba);font-size:11px}
