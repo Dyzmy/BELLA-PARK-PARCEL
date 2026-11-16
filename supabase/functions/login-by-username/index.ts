@@ -28,11 +28,11 @@ Deno.serve(async (req) => {
     const adminClient = createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
     const { data: profile, error: profileError } = await adminClient
       .from("staff_profiles")
-      .select("user_id")
+      .select("user_id,is_active")
       .ilike("username", cleanUsername)
       .maybeSingle();
 
-    if (profileError || !profile) {
+    if (profileError || !profile || profile.is_active === false) {
       return Response.json({ error: "Username atau password tidak tepat." }, { status: 401, headers: cors });
     }
 
