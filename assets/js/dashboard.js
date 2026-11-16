@@ -46,7 +46,10 @@ function setSignedOut() {
 async function loadDashboard() {
   const {data:profile,error:profileError}=await client.from("staff_profiles").select("display_name,role,username").single();
   if(profileError||!profile||!["admin","scanner","viewer"].includes(profile.role)) {
-    await client.auth.signOut(); setSignedOut(); showMessage("Akaun ini tiada akses staf BELLA PARK. Hubungi pentadbir."); return;
+    activeProfile=null;
+    await client.auth.signOut(); setSignedOut();
+    showMessage("Akaun ini tiada profil staf yang sah. Pentadbir perlu semak staff_profiles untuk username ini.");
+    return false;
   }
   activeProfile=profile;
   const {data:sessions,error:sessionError}=await client.from("pickup_sessions")
@@ -76,6 +79,7 @@ async function loadDashboard() {
   renderMonthSummary();
   renderRecords();
   refreshProfilePanel();
+  return true;
 }
 function recordsForMonth(key) { return pickupRecords.filter(r=>r.rider===activeDriver&&r.month===key); }
 function renderDrivers() {
@@ -273,7 +277,12 @@ $("login-form").addEventListener("submit",async event=>{
     }
     showMessage(detail);return;
   }
-  try{setSignedIn(data.user);await loadDashboard();await maybeShowSetupPopup(data.user);}
+  try{
+    setSignedIn(data.user);
+    const authorized=await loadDashboard();
+    if(!authorized)return;
+    await maybeShowSetupPopup(data.user);
+  }
   catch(err){await client.auth.signOut();setSignedOut();showMessage("Gagal membaca database: "+(err.message||"Semak akses Supabase."));}
 });
 $("logout-button").addEventListener("click",async()=>{await client.auth.signOut();setSignedOut();});
