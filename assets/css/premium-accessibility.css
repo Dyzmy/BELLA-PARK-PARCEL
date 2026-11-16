@@ -163,10 +163,14 @@ input:disabled, select:disabled, button:disabled {
   .filter-wrap select { width: 100%; min-height: 42px; }
   .driver-grid, .month-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .bottom-nav {
-    position: sticky;
+    position: fixed;
+    left: 50%;
+    right: auto;
     bottom: max(8px, env(safe-area-inset-bottom));
-    width: 100%;
-    margin-top: 18px;
+    transform: translateX(-50%);
+    width: min(620px, calc(100vw - 28px));
+    max-width: calc(100vw - 28px);
+    margin: 0;
     padding: 5px;
     gap: 3px;
   }
