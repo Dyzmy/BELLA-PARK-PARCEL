@@ -93,18 +93,36 @@ async function loadDashboard() {
   const {data:sessions,error:sessionError}=await client.from("pickup_sessions")
     .select("id,courier,driver_name,picked_up_at,month_key,created_by").order("picked_up_at",{ascending:false}).limit(1000);
   if(sessionError) throw sessionError;
-  const {data:parcels,error:parcelError}=await client.from("parcel_records_masked")
-    .select("session_id,tracking_masked,created_at").limit(5000);
+  const parcelTable=profile.role==="admin"?"parcel_records":"parcel_records_masked";
+  const parcelColumns=profile.role==="admin"
+    ?"id,session_id,tracking_number,created_at"
+    :"id,session_id,tracking_masked,created_at";
+  const {data:parcels,error:parcelError}=await client.from(parcelTable)
+    .select(parcelColumns).limit(5000);
   if(parcelError) throw parcelError;
+  const {data:operations,error:operationError}=await client.from("parcel_operations")
+    .select("parcel_id,delivery_status,review_status");
+  if(operationError) throw operationError;
+  const operationById=new Map((operations||[]).map(o=>[o.parcel_id,o]));
   const bySession=new Map();
-  (parcels||[]).forEach(p=>{if(!bySession.has(p.session_id))bySession.set(p.session_id,[]);bySession.get(p.session_id).push(p.tracking_masked);});
-  pickupRecords=(sessions||[]).filter(s=>profile.role==="admin"||s.created_by===user.id).map(s=>({
-    id:s.id, owner:s.created_by, timestamp:s.picked_up_at, dateKey:localDateKey(s.picked_up_at),
-    month:localMonth(s.picked_up_at), time:formatTime(s.picked_up_at),
-    hour:Number(localParts(s.picked_up_at).hour), minute:Number(localParts(s.picked_up_at).minute),
-    courier:s.courier||"-", rider:(s.driver_name||"").trim()||"TIDAK DINYATAKAN",
-    tracking:bySession.get(s.id)||[]
-  }));
+  (parcels||[]).forEach(p=>{
+    if(!bySession.has(p.session_id))bySession.set(p.session_id,[]);
+    const op=operationById.get(p.id)||{delivery_status:"pickup",review_status:"right"};
+    bySession.get(p.session_id).push({
+      id:p.id, tracking:profile.role==="admin"?p.tracking_number:p.tracking_masked,
+      delivery_status:op.delivery_status, review_status:op.review_status
+    });
+  });
+  pickupRecords=(sessions||[]).filter(s=>profile.role==="admin"||s.created_by===user.id).map(s=>{
+    const parcelDetails=bySession.get(s.id)||[];
+    return {
+      id:s.id, owner:s.created_by, timestamp:s.picked_up_at, dateKey:localDateKey(s.picked_up_at),
+      month:localMonth(s.picked_up_at), time:formatTime(s.picked_up_at),
+      hour:Number(localParts(s.picked_up_at).hour), minute:Number(localParts(s.picked_up_at).minute),
+      courier:s.courier||"-", rider:(s.driver_name||"").trim()||"TIDAK DINYATAKAN",
+      parcelDetails, tracking:parcelDetails.map(p=>p.tracking)
+    };
+  });
   const today=new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Kuala_Lumpur",year:"numeric",month:"2-digit"}).format(new Date());
   const currentMonth=today+"-01";
   const drivers=[...new Set(pickupRecords.map(r=>r.rider))].sort((a,b)=>a.localeCompare(b));
@@ -124,7 +142,7 @@ function renderDrivers() {
   const drivers=[...new Set(pickupRecords.map(r=>r.rider))].sort((a,b)=>a.localeCompare(b));
   $("driver-summary").innerHTML=drivers.length?drivers.map(name=>{
     const rows=pickupRecords.filter(r=>r.rider===name);
-    const total=rows.reduce((n,r)=>n+r.tracking.length,0);
+    const total=rows.reduce((n,r)=>n+r.parcelDetails.filter(p=>p.review_status!=="pangkah"&&p.delivery_status!=="cancelled").length,0);
     return `<button type="button" class="driver-card ${name===activeDriver?"active":""}" data-driver="${escapeHtml(name)}">
       <span class="driver-card-label">DRIVER / RIDER</span><strong>${escapeHtml(name)}</strong>
       <span class="driver-card-foot">${total.toLocaleString("ms-MY")} PARCEL · ${rows.length} PICKUP</span>
@@ -142,7 +160,7 @@ function renderMonthSummary() {
   const totalsByMonth=new Map();
   pickupRecords.filter(r=>r.rider===activeDriver).forEach(r=>{
     if(!totalsByMonth.has(r.month))totalsByMonth.set(r.month,{parcels:0,sessions:0});
-    const item=totalsByMonth.get(r.month); item.parcels+=r.tracking.length; item.sessions++;
+    const item=totalsByMonth.get(r.month); item.parcels+=r.parcelDetails.filter(p=>p.review_status!=="pangkah"&&p.delivery_status!=="cancelled").length; item.sessions++;
   });
   const months=[...totalsByMonth.keys()].sort().reverse();
   $("month-summary").innerHTML=months.length?months.map(key=>{
@@ -180,9 +198,10 @@ function renderRecords() {
     const pagi=dayRecords.filter(r=>r.hour<14);
     const petang=dayRecords.filter(r=>r.hour>=14&&r.hour<=17);
     const luar=dayRecords.filter(r=>r.hour>17);
-    const pagiTotal=pagi.reduce((n,r)=>n+r.tracking.length,0);
-    const petangTotal=petang.reduce((n,r)=>n+r.tracking.length,0);
-    const total=dayRecords.reduce((n,r)=>n+r.tracking.length,0);
+    const netCount=rs=>rs.reduce((n,r)=>n+r.parcelDetails.filter(p=>p.review_status!=="pangkah"&&p.delivery_status!=="cancelled").length,0);
+    const pagiTotal=netCount(pagi);
+    const petangTotal=netCount(petang);
+    const total=netCount(dayRecords);
     const couriers=[...new Set(dayRecords.map(r=>r.courier))].join(", ");
     const detailIds=dayRecords.map(r=>r.id).join(",");
     rows.push(`<tr><td>${formatDateKey(key)}</td>
@@ -197,12 +216,34 @@ function renderRecords() {
 function showDetails(ids) {
   const selected=pickupRecords.filter(r=>ids.includes(r.id));
   if(!selected.length)return;
-  const allTracking=selected.flatMap(r=>r.tracking);
+  const allParcels=selected.flatMap(r=>r.parcelDetails.map(p=>({...p,sessionId:r.id,rider:r.rider,courier:r.courier})));
+  const allTracking=allParcels.map(p=>p.tracking);
   $("modal-title").textContent="Tracking Parcel";
   $("detail-meta").innerHTML=[["DRIVER / RIDER",activeDriver],["TARIKH",formatDateKey(selected[0].dateKey)],["SESI",selected.map(r=>r.time).join(", ")],["COURIER",[...new Set(selected.map(r=>r.courier))].join(", ")],["TOTAL",allTracking.length+" parcel"]]
     .map(([label,value])=>`<div class="meta-item"><small>${label}</small><strong>${escapeHtml(value)}</strong></div>`).join("");
-  $("tracking-count").textContent=allTracking.length+" tracking (masked)";
-  $("tracking-list").innerHTML=allTracking.map(t=>`<li>${escapeHtml(t)}</li>`).join("");
+  $("tracking-count").textContent=allTracking.length+" tracking"+(activeProfile?.role==="admin"?" (penuh)":" (masked)");
+  $("tracking-list").innerHTML=allParcels.map(p=>{
+    const status=p.delivery_status==="cancelled"?"DIBATALKAN OLEH ADMIN":p.delivery_status==="done"?"DONE":"PICKUP";
+    const review=p.review_status==="pangkah"?"PANGKAH":"RIGHT";
+    const controls=activeProfile?.role==="admin"
+      ?` <div class="parcel-admin-actions"><button type="button" class="outline-button" data-parcel-action="right" data-parcel-id="${p.id}">RIGHT</button><button type="button" class="outline-button" data-parcel-action="pangkah" data-parcel-id="${p.id}">PANGKAH</button><button type="button" class="outline-button" data-parcel-action="cancelled" data-parcel-id="${p.id}">BATAL</button></div>`
+      :"";
+    return `<li><strong>${escapeHtml(p.tracking)}</strong><small>${status} · ${review}</small>${controls}</li>`;
+  }).join("");
+  document.querySelectorAll("[data-parcel-action]").forEach(button=>button.addEventListener("click",async()=>{
+    button.disabled=true;
+    try{
+      const rpc=button.dataset.parcelAction==="cancelled"?"admin_cancel_parcel":"admin_set_parcel_review";
+      const args=button.dataset.parcelAction==="cancelled"
+        ?{p_parcel_id:button.dataset.parcelId}
+        :{p_parcel_id:button.dataset.parcelId,p_review_status:button.dataset.parcelAction};
+      const {error}=await client.rpc(rpc,args);
+      if(error)throw error;
+      await loadDashboard();
+      const refreshed=pickupRecords.filter(r=>ids.includes(r.id));
+      if(refreshed.length)showDetails(ids);
+    }catch(err){alert(err.message||"Status parcel gagal dikemaskini.");button.disabled=false;}
+  }));
   $("detail-modal").classList.add("open"); $("detail-modal").setAttribute("aria-hidden","false");
 }
 function closeDetail(){ $("detail-modal").classList.remove("open"); $("detail-modal").setAttribute("aria-hidden","true"); }
