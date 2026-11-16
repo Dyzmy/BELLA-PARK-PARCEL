@@ -7,6 +7,7 @@ let pickupRecords = [];
 let activeDriver = null;
 let activeMonthKey = null;
 let activeProfile = null;
+let refreshInProgress = false;
 
 // Remember only the account identifier; never store passwords in local storage.
 try {
@@ -126,9 +127,13 @@ async function loadDashboard() {
   const today=new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Kuala_Lumpur",year:"numeric",month:"2-digit"}).format(new Date());
   const currentMonth=today+"-01";
   const drivers=[...new Set(pickupRecords.map(r=>r.rider))].sort((a,b)=>a.localeCompare(b));
-  activeDriver=profile.role==="admin"?(drivers[0]||null):(profile.display_name||drivers[0]||null);
+  const previousDriver=activeDriver, previousMonth=activeMonthKey;
+  activeDriver=profile.role==="admin"
+    ?(drivers.includes(previousDriver)?previousDriver:(drivers[0]||null))
+    :(profile.display_name||drivers[0]||null);
   const driverMonths=pickupRecords.filter(r=>r.rider===activeDriver).map(r=>r.month);
-  activeMonthKey=driverMonths.includes(currentMonth)?currentMonth:[...new Set(driverMonths)].sort().reverse()[0]||currentMonth;
+  activeMonthKey=driverMonths.includes(previousMonth)?previousMonth:
+    (driverMonths.includes(currentMonth)?currentMonth:[...new Set(driverMonths)].sort().reverse()[0]||currentMonth);
   $("year").textContent=localParts(new Date()).year;
   $("today-label").textContent=new Intl.DateTimeFormat("ms-MY",{timeZone:"Asia/Kuala_Lumpur",dateStyle:"full"}).format(new Date()).toUpperCase();
   renderDrivers();
@@ -411,3 +416,9 @@ $("logout-button").addEventListener("click",async()=>{await client.auth.signOut(
   try{setSignedIn(session.user);await loadDashboard();}
   catch(err){await client.auth.signOut();setSignedOut();showMessage("Sambungan database gagal: "+(err.message||"Cuba lagi."));}
 })();
+setInterval(async()=>{
+  if(!activeProfile||refreshInProgress)return;
+  refreshInProgress=true;
+  try{await loadDashboard();}catch(_){}
+  finally{refreshInProgress=false;}
+},30000);
