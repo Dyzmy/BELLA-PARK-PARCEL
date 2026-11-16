@@ -1,5 +1,5 @@
 // BELLA PARK: resolve stable staff username to current Auth email, then sign in.
-// Required Edge Function secrets: SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY.
+// Supabase injects SUPABASE_URL, SUPABASE_ANON_KEY and SUPABASE_SERVICE_ROLE_KEY at runtime; do not add them to GitHub.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const cors = {
