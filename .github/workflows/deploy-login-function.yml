@@ -29,3 +29,5 @@ jobs:
         run: supabase functions deploy login-by-username --project-ref "$PROJECT_ID" --use-api --yes
       - name: Deploy protected creator password reset
         run: supabase functions deploy admin-reset-creator-password --project-ref "$PROJECT_ID" --use-api --yes
+      - name: Deploy admin rider account management
+        run: supabase functions deploy admin-manage-riders --project-ref "$PROJECT_ID" --use-api --yes
