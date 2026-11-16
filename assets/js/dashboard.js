@@ -203,16 +203,6 @@ function refreshProfilePanel(){
   });
   return user;
 }
-async function maybeShowSetupPopup(user){
-  const meta=user.user_metadata||{};
-  if(meta.account_setup_complete===true)return;
-  const count=Number(meta.account_setup_prompt_count||0);
-  if(count>=3)return;
-  await client.auth.updateUser({data:{...meta,account_setup_prompt_count:count+1}});
-  $("setup-email").value="";$("setup-password").value="";$("setup-password-confirm").value="";
-  $("setup-message").textContent="";
-  openAccountModal("setup-modal");
-}
 async function updateAccount(formPrefix,completeSetup){
   const email=$(formPrefix+"email").value.trim();
   const password=$(formPrefix+"password").value;
@@ -233,18 +223,8 @@ async function updateAccount(formPrefix,completeSetup){
   await refreshProfilePanel();
   return email?"Permintaan kemaskini berjaya. Semak inbox email baharu untuk pautan pengesahan jika diminta.":"Password berjaya dikemaskini.";
 }
-$("setup-close").addEventListener("click",()=>closeAccountModal("setup-modal"));
 $("profile-close").addEventListener("click",()=>closeAccountModal("profile-modal"));
 $("profile-button").addEventListener("click",async()=>{await refreshProfilePanel();openAccountModal("profile-modal");});
-$("setup-form").addEventListener("submit",async e=>{
-  e.preventDefault();const b=$("setup-submit");b.disabled=true;b.textContent="MENYIMPAN...";
-  try{
-    const msg=await updateAccount("setup-",true);
-    $("setup-message").textContent=msg+" Popup ini tidak akan dipaparkan lagi.";
-    b.textContent="BERJAYA";
-    setTimeout(()=>closeAccountModal("setup-modal"),2200);
-  }catch(err){$("setup-message").textContent=err.message||"Kemaskini gagal.";b.disabled=false;b.textContent="KEMASKINI AKAUN";}
-});
 $("profile-form").addEventListener("submit",async e=>{
   e.preventDefault();const b=$("profile-submit");b.disabled=true;b.textContent="MENYIMPAN...";
   try{$("profile-message").textContent=await updateAccount("profile-",false);}
@@ -281,7 +261,6 @@ $("login-form").addEventListener("submit",async event=>{
     setSignedIn(data.user);
     const authorized=await loadDashboard();
     if(!authorized)return;
-    await maybeShowSetupPopup(data.user);
   }
   catch(err){await client.auth.signOut();setSignedOut();showMessage("Gagal membaca database: "+(err.message||"Semak akses Supabase."));}
 });
