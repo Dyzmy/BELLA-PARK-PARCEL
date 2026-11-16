@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/style.css?v=20261117-5">
+  <link rel="stylesheet" href="assets/css/style.css?v=20261117-premium1">
 </head>
 <body>
   <div class="app-shell">
@@ -22,6 +22,7 @@
     </header>
 
     <main class="container" id="dashboard-content" hidden>
+      <section class="page-section" id="page-overview" data-page-panel="overview">
       <section class="welcome">
         <div>
           <p class="eyebrow">OPERATIONS OVERVIEW</p>
@@ -31,6 +32,8 @@
         <div class="date-chip" id="today-label">TODAY</div>
       </section>
 
+      </section>
+      <section class="page-section" id="page-riders" data-page-panel="riders">
       <section class="month-panel admin-rider-panel" id="admin-rider-panel" hidden>
         <div class="panel-heading"><div><p class="eyebrow">ADMIN CONTROL</p><h2>Pengurusan Driver / Rider</h2></div><span class="month-hint">Akaun scanner · SPX / J&amp;T / NINJA</span></div>
         <form id="rider-create-form" class="rider-form">
@@ -61,11 +64,15 @@
         <div class="panel-heading"><div><p class="eyebrow">DRIVER / RIDER DIRECTORY</p><h2>Pilih Nama Driver / Rider</h2></div><span class="month-hint">Klik nama untuk buka arkib individu</span></div>
         <div class="driver-grid" id="driver-summary"></div>
       </section>
+      </section>
+      <section class="page-section" id="page-analytics" data-page-panel="analytics">
       <section class="month-panel">
         <div class="panel-heading"><div><p class="eyebrow">MONTHLY ARCHIVE</p><h2>Arkib <span id="archive-driver-title">Driver</span></h2></div><span class="month-hint">Pilih bulan untuk lihat rekod</span></div>
         <div class="month-grid" id="month-summary"></div>
       </section>
 
+      </section>
+      <section class="page-section" id="page-parcels" data-page-panel="parcels">
       <section class="records-panel">
         <div class="panel-heading">
           <div><p class="eyebrow">PICKUP HISTORY</p><h2>Rekod Harian · <span id="archive-driver-title-table">Pickup</span></h2></div>
@@ -83,6 +90,14 @@
         </div>
         <div class="table-note"><span class="lock-icon">▣</span> Paparan sahaja · Rekod tidak boleh diedit atau dipadam melalui website.</div>
       </section>
+      </section>
+      <nav class="bottom-nav" id="bottom-nav" aria-label="Navigasi utama">
+        <button type="button" class="nav-item active" data-page="overview"><span>⌂</span><small>Overview</small></button>
+        <button type="button" class="nav-item admin-nav" data-page="riders"><span>♙</span><small>Rider</small></button>
+        <button type="button" class="nav-item" data-page="parcels"><span>▤</span><small>Parcel</small></button>
+        <button type="button" class="nav-item" data-page="analytics"><span>▥</span><small>Analitik</small></button>
+        <button type="button" class="nav-item" data-page="account"><span>⚙</span><small>Akaun</small></button>
+      </nav>
       <footer class="footer"><span>© <span id="year"></span> BELLA PARK</span><span>PARCEL MANAGEMENT SYSTEM</span></footer>
     </main>
   </div>
@@ -136,6 +151,6 @@
       location.replace("reset-password.html" + location.hash);
     }
   </script>
-  <script src="assets/js/dashboard.js?v=20261117-5"></script>
+  <script src="assets/js/dashboard.js?v=20261117-premium1"></script>
 </body>
 </html>
