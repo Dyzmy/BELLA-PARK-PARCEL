@@ -393,3 +393,66 @@ tbody tr:hover{background:#ffffff08}
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}
 }
+
+
+/* BELLA PARK — Premium refinement 2026-11-18 */
+:root{
+  --bp-radius:18px;
+  --bp-shadow:0 16px 38px rgba(0,0,0,.24);
+}
+.topbar{
+  min-height:78px;
+  border-bottom:1px solid #c8a96a44;
+  box-shadow:0 10px 34px #0004;
+}
+.brand-mark{border-radius:13px;box-shadow:inset 0 0 0 1px #c8a96a22,0 5px 18px #0003}
+.container{max-width:1280px}
+.welcome{padding-top:38px}
+.welcome h1{font-family:"Manrope",sans-serif;font-weight:800;letter-spacing:-1.2px}
+.stat-card,.month-panel,.records-panel,.auth-card,.detail-modal,.account-modal{
+  border-radius:var(--bp-radius)!important;
+  box-shadow:var(--bp-shadow),inset 0 1px #ffffff08!important;
+}
+.stat-card{min-height:132px}
+.stat-card:not(.total-card){background:linear-gradient(145deg,#172538,#101b2a)!important}
+.records-panel,.month-panel{padding:25px}
+.panel-heading h2,.modal-head h2{font-family:"Manrope",sans-serif;letter-spacing:-.55px}
+.outline-button{border-radius:11px;min-height:38px}
+.auth-submit{border-radius:12px;min-height:48px}
+.table-wrap{border-radius:15px}
+tbody tr{transition:background .16s ease}
+.driver-card,.month-card{border-radius:15px}
+.parcel-admin-actions .outline-button{min-width:86px}
+button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{
+  outline:2px solid var(--gold-light);outline-offset:3px
+}
+@media(max-width:760px){
+  .welcome{padding-top:28px}
+  .records-panel,.month-panel{padding:17px 14px}
+  .panel-heading h2{font-size:19px}
+  /* Keep the daily schedule readable without sideways scrolling on phones. */
+  .table-wrap{overflow:visible;border:0;background:transparent}
+  .table-wrap table{table-layout:fixed;white-space:normal;background:transparent}
+  .table-wrap thead{display:none}
+  .table-wrap tbody{display:grid;gap:10px}
+  .table-wrap tbody tr{
+    display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+    background:#111a26;border:1px solid #2b394a;border-radius:14px;
+    padding:5px 9px;min-width:0
+  }
+  .table-wrap tbody td{
+    display:flex;flex-direction:column;justify-content:center;gap:5px;
+    min-width:0;padding:10px 7px;border-bottom:1px solid #263241;
+    white-space:normal;overflow-wrap:anywhere;font-size:12px
+  }
+  .table-wrap tbody td:first-child{grid-column:1/-1}
+  .table-wrap tbody td:last-child{border-bottom:0}
+  .table-wrap tbody td::before{
+    content:attr(data-label);color:#9eacbb;font-size:9px;
+    font-weight:800;letter-spacing:.7px;text-transform:uppercase
+  }
+  .table-wrap tbody td.empty-row{
+    display:block;grid-column:1/-1;text-align:center;padding:22px 10px
+  }
+  .table-wrap tbody td.empty-row::before{content:none}
+}
