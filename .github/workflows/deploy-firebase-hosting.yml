@@ -1,0 +1,32 @@
+name: Deploy BELLA PARK to Firebase Hosting
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "index.html"
+      - "forgot-password.html"
+      - "reset-password.html"
+      - "assets/**"
+      - "firebase.json"
+      - ".github/workflows/deploy-firebase-hosting.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Deploy to Firebase Hosting
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_BELLA_PARK }}
+          projectId: bella-park
+          channelId: live
